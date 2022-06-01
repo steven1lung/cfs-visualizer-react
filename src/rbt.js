@@ -31,7 +31,7 @@ export class RBTree {
       this.__insert_fix(node);
       //   console.log(node);
     }
-    console.log("finished insert " + value);
+    // console.log("finished insert " + value);
     this.size++;
   }
 

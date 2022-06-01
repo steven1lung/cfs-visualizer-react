@@ -10,6 +10,7 @@ var tasks = new Map();
 var num;
 var timequeue = new Map();
 var readyqueue = new Map();
+var sched_flag = false;
 
 //scheduler variables
 var current_task = "";
@@ -65,23 +66,82 @@ function App() {
       return;
     }
 
+    //tick
+    sched_tick();
+
     //get tasks that arrive at current clock
     var cur = timequeue.get(clock);
-    console.log(tasks);
+    // console.log(tasks);
     if (cur) {
       for (var i of cur) {
         readyqueue.set(i, tasks.get(i));
         rbt.insert(i, tasks.get(i).vruntime);
       }
       // treeRef.current.forceUpdate();
-      console.log(readyqueue);
+      console.log("readyqueue: ", readyqueue);
+      schedule();
     }
-    // schedule();
+    console.log("\n\n");
   };
+
+  function sched_tick() {
+    if (current_task === "") return;
+
+    //update exec runtime
+
+    update_exec(current_task);
+    var se = readyqueue.get(current_task);
+    console.log(se);
+    if (se.timeslice <= 0) {
+      //ran out of timeslice
+      sched_flag = true;
+    } else if (se.sum_exec_runtime >= se.burst_time) {
+      //finish execute
+      sched_flag = true;
+    }
+  }
+
+  function update_exec(key) {
+    var se = readyqueue.get(key);
+    readyqueue.set(
+      key,
+      new Sched(
+        se.arrival_time,
+        se.burst_time - 1,
+        se.nice,
+        se.exec_start,
+        clock - se.exec_start,
+        0,
+        se.timeslice - 1
+      )
+    );
+    tasks.set(key, readyqueue.get(key));
+  }
 
   function schedule() {
     var min = rbt.get_min();
+    //get schedule entity that has smallest vruntime
+    var se = readyqueue.get(min);
     console.log(min, " has the smallest vruntime");
+
+    //update its timeslice and exec_start
+    update_slice(min);
+    console.log(readyqueue.get(min));
+
+    rbt.remove(min);
+    readyqueue.delete(min);
+    current_task = min;
+    console.log("current task: ", current_task);
+  }
+
+  function update_slice(key) {
+    var timeslice = calc_slice(key);
+    var se = readyqueue.get(key);
+    readyqueue.set(
+      key,
+      new Sched(se.arrival_time, se.burst_time, se.nice, clock, 0, 0, timeslice)
+    );
+    tasks.set(key, readyqueue.get(key));
   }
 
   function get_nice(nice) {
@@ -104,7 +164,6 @@ function App() {
     var weight = get_nice(se.nice);
     var total_weight = 0;
     for (const i of readyqueue.values()) total_weight += get_nice(i.nice);
-    console.log(total_weight);
     timeslice = target_latency * (weight / total_weight);
     return timeslice;
   }
@@ -115,6 +174,7 @@ function App() {
     console.log("sched_latency: ", sched_latency);
     console.log("sched_min_granularity: ", sched_min_granularity);
     console.log("sched_wakeup_granularity: ", sched_wakeup_granularity);
+    console.log("\n\n");
   }
 
   return (
