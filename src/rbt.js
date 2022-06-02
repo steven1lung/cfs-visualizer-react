@@ -134,8 +134,8 @@ export class RBTree {
     node.parent = left_p;
   }
 
-  remove(key, value) {
-    const delete_node = this.search(key, value);
+  remove() {
+    const delete_node = this.get_min(this.root);
     if (delete_node == null) return;
 
     var x;
@@ -167,6 +167,7 @@ export class RBTree {
     if (prev_color == BLACK) {
       this.__remove_fix(x);
     }
+    this.size--;
   }
 
   transplant(a, b) {
@@ -233,9 +234,9 @@ export class RBTree {
   search(key, value) {
     var node = this.root;
     while (node != null) {
-      if (value < node.value) node = node.left;
+      if (key == node.key) return node;
+      else if (value < node.value) node = node.left;
       else if (value > node.value) node = node.right;
-      else if (value == node.value && key == node.key) return node;
       else return null;
     }
   }

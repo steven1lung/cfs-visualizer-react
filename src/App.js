@@ -146,6 +146,21 @@ function App() {
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
     console.log("Update ", key, "'s vruntime to : ", vruntime);
+    var se = tasks.get(key);
+    tasks.set(
+      key,
+      new Sched(
+        se.arrival_time,
+        se.burst_time,
+        se.nice,
+        se.exec_start,
+        se.sum_exec_runtime,
+        vruntime,
+        se.timeslice,
+        se.on_rq
+      )
+    );
+    rbt.insert(key, vruntime);
   }
 
   function update_exec(key) {
@@ -176,8 +191,7 @@ function App() {
     console.log(min.key, " has the smallest vruntime : ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
-    rbt.remove(min.key, se.vruntime); //remove schedule entity from rbt
-
+    rbt.remove(); //remove schedule entity from rbt
     current_task = min.key;
   }
 
