@@ -227,7 +227,7 @@ export class RBTree {
         }
       }
     }
-    node.color = BLACK;
+    if (node) node.color = BLACK;
   }
 
   search(key, value) {

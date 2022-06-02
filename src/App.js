@@ -78,9 +78,10 @@ function App() {
         rbt.insert(i, tasks.get(i).vruntime);
       }
       // treeRef.current.forceUpdate();
-      console.log("readyqueue: ", readyqueue);
-      schedule();
+      // console.log("readyqueue: ", readyqueue);
+      sched_flag = true;
     }
+    if (sched_flag == true) schedule();
     console.log("\n\n");
   };
 
@@ -88,7 +89,6 @@ function App() {
     if (current_task === "") return;
 
     //update exec runtime
-
     update_exec(current_task);
     var se = readyqueue.get(current_task);
     console.log(se);
@@ -102,7 +102,9 @@ function App() {
   }
 
   function update_exec(key) {
+    console.log(readyqueue);
     var se = readyqueue.get(key);
+    console.log(se);
     readyqueue.set(
       key,
       new Sched(
@@ -119,19 +121,20 @@ function App() {
   }
 
   function schedule() {
-    var min = rbt.get_min();
-    //get schedule entity that has smallest vruntime
-    var se = readyqueue.get(min);
-    console.log(min, " has the smallest vruntime");
+    var min = rbt.get_min(rbt.root); //get smallest vruntime from rbt
+    var se = readyqueue.get(min.key); //get schedule entity that has smallest vruntime
 
-    //update its timeslice and exec_start
-    update_slice(min);
-    console.log(readyqueue.get(min));
-    se = readyqueue.get(min);
-    rbt.remove(min, se.vruntime);
-    // readyqueue.delete(min);
-    // current_task = min;
-    // console.log("current task: ", current_task);
+    console.log(min.key, " has the smallest vruntime");
+
+    update_slice(min.key); //update its timeslice and exec_start
+
+    console.log(readyqueue.get(min.key));
+
+    se = readyqueue.get(min.key); //get updated schedule entity
+    rbt.remove(min.key, se.vruntime); //remove schedule entity from rbt
+
+    current_task = min.key;
+    console.log("current task: ", current_task);
   }
 
   function update_slice(key) {
