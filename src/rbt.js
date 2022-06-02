@@ -1,4 +1,3 @@
-import "./styles/rbt.css";
 const RED = true;
 const BLACK = false;
 class Node {
@@ -11,7 +10,7 @@ class Node {
     this.parent = null;
   }
 }
-export class RBTree {
+class RBTree {
   constructor() {
     this.root = null;
     this.size = 0;
@@ -135,22 +134,127 @@ export class RBTree {
     node.parent = left_p;
   }
 
-  Node_div() {
-    var rd = [];
-    for (var i = 0; i < 3; ++i) {
-      rd.push(
-        <div className="node" key={i}>
-          A
-        </div>
-      );
+  remove(key, value) {
+    const delete_node = this.search(key, value);
+    if (delete_node == null) return;
+
+    var x;
+    var y = delete_node;
+    var prev_color = y.color;
+    if (this.isNull(delete_node.left)) {
+      x = delete_node.right;
+      this.transplant(delete_node, delete_node.right);
+    } else if (this.isNull(delete_node.right)) {
+      x = delete_node.left;
+      this.transplant(delete_node, delete_node.left);
+    } else {
+      y = this.get_min(delete_node.right);
+      prev_color = y.color;
+      x = y.right;
+
+      if (y.parent == delete_node) {
+        if (x) x.parent = y;
+      } else {
+        this.transplant(y, y.right);
+        y.right = delete_node.right;
+        y.right.parent = y;
+      }
+      this.transplant(delete_node, y);
+      y.left = delete_node.left;
+      y.left.parent = y;
+      y.color = delete_node.color;
     }
-    return <div className="container">{rd}</div>;
+    if (prev_color == BLACK) {
+      this.__remove_fix(x);
+    }
   }
 
-  get_min() {
+  transplant(a, b) {
+    if (a.parent == null) this.root = b;
+    else if (a == a.parent.left) a.parent.left = b;
+    else a.parent.right = b;
+    if (b) b.parent = a.parent;
+  }
+
+  __remove_fix(node) {
+    while (node !== this.root && node.color == BLACK) {
+      if (node == node.parent.left) {
+        var w = node.parent.right;
+        if (w.color == RED) {
+          w.color = BLACK;
+          this.rotate_left(node.parent);
+          w = node.parent.right;
+        }
+        if (w.color == BLACK && w.right.color == BLACK) {
+          w.color = RED;
+          node = node.parent;
+          continue;
+        } else if (w.right.color == BLACK) {
+          w.left.color = BLACK;
+          w.color = RED;
+          w = node.parent.right;
+        }
+        if (w.right.color == RED) {
+          w.color = node.parent.color;
+          node.parent.color = BLACK;
+          w.right.color = BLACK;
+          this.rotate_left(node.parent);
+          node = this.root;
+        }
+      } else {
+        var w = node.parent.left;
+        if (w.color == RED) {
+          w.color = BLACK;
+          node.parent.color = RED;
+          this.rotate_right(node.parent);
+          w = node.parent.left;
+        }
+        if (w.right.color == BLACK && w.left.color == BLACK) {
+          w.color = RED;
+          node = node.parent;
+        } else if (w.left.color == BLACK) {
+          w.right.color = BLACK;
+          w.color = RED;
+          this.rotate_left(w);
+          w = node.parent.left;
+        }
+        if (w.left.color == RED) {
+          w.color = node.parent.color;
+          node.parent.color = BLACK;
+          w.left.color = BLACK;
+          this.rotate_right(node.parent);
+          node = this.root;
+        }
+      }
+    }
+    node.color = BLACK;
+  }
+
+  search(key, value) {
     var node = this.root;
-    while (node.left) node = node.left;
-    return node.key;
+    while (node != null) {
+      if (value < node.value) node = node.left;
+      else if (value > node.value) node = node.right;
+      else if (value == node.value && key == node.key) return node;
+      else return null;
+    }
+  }
+
+  isNull(node) {
+    return (
+      node == null ||
+      (node.key == null &&
+        node.value == null &&
+        node.color == BLACK &&
+        node.left == null &&
+        node.right == null)
+    );
+  }
+
+  get_min(node) {
+    if (node == null || node == undefined) return;
+    while (!this.isNull(node.left)) node = node.left;
+    return node;
   }
 
   printTree(node) {
@@ -162,11 +266,16 @@ export class RBTree {
 }
 
 // const bst = new RBTree();
-// bst.insert(123);
-// bst.insert(3);
-// bst.insert(-2);
-// bst.insert(9123);
-// bst.insert(230);
-// bst.insert(-90);
-// console.log(bst.root);
-// printTree(bst.root);
+// bst.insert("A", 123);
+// bst.insert("A", 3);
+// bst.insert("A", -2);
+// bst.insert("A", 9123);
+// bst.insert("A", 230);
+// bst.insert("A", -90);
+
+// bst.printTree(bst.root);
+// console.log("\n\n\n");
+// bst.remove("A", 230);
+// bst.remove("A", -2);
+// bst.remove("A", 123);
+// bst.printTree(bst.root);

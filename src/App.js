@@ -127,11 +127,11 @@ function App() {
     //update its timeslice and exec_start
     update_slice(min);
     console.log(readyqueue.get(min));
-
-    rbt.remove(min);
-    readyqueue.delete(min);
-    current_task = min;
-    console.log("current task: ", current_task);
+    se = readyqueue.get(min);
+    rbt.remove(min, se.vruntime);
+    // readyqueue.delete(min);
+    // current_task = min;
+    // console.log("current task: ", current_task);
   }
 
   function update_slice(key) {
