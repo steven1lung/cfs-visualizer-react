@@ -36,7 +36,8 @@ function App() {
 
     var n = parseInt(ary[0]);
     num = n;
-    while (n > 0) {
+    n = 1;
+    while (n <= num) {
       var tmp = ary[n].split(" ");
       const sched = new Sched(tmp[1], tmp[2], tmp[3]);
       var tmpary = timequeue.get(parseInt(tmp[1]));
@@ -44,7 +45,7 @@ function App() {
       else tmpary.push(tmp[0]);
       timequeue.set(parseInt(tmp[1]), tmpary);
       tasks.set(tmp[0], sched);
-      n--;
+      n++;
     }
 
     //scroll to red black tree
@@ -144,7 +145,7 @@ function App() {
 
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
-    console.log(vruntime);
+    console.log("Update ", key, "'s vruntime to : ", vruntime);
   }
 
   function update_exec(key) {
