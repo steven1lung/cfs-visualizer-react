@@ -6,7 +6,8 @@ export class Sched {
     exec_start,
     sum_exec_runtime,
     vruntime,
-    timeslice
+    timeslice,
+    on_rq
   ) {
     this.arrival_time = parseInt(arrival);
     this.burst_time = parseInt(burst);
@@ -15,5 +16,6 @@ export class Sched {
     this.sum_exec_runtime = sum_exec_runtime ? sum_exec_runtime : 0;
     this.vruntime = vruntime ? vruntime : 0;
     this.timeslice = timeslice ? timeslice : 0;
+    this.on_rq = on_rq ? on_rq : false;
   }
 }

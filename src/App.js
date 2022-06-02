@@ -9,9 +9,8 @@ var rbt = new RBTree();
 var tasks = new Map();
 var num;
 var timequeue = new Map();
-var readyqueue = new Map();
 var sched_flag = false;
-
+var update_flag = false;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -66,85 +65,138 @@ function App() {
       return;
     }
 
-    //tick
-    sched_tick();
+    sched_tick(); //update schedule enitities that are on runqueue
 
     //get tasks that arrive at current clock
     var cur = timequeue.get(clock);
     // console.log(tasks);
     if (cur) {
       for (var i of cur) {
-        readyqueue.set(i, tasks.get(i));
         rbt.insert(i, tasks.get(i).vruntime);
       }
       // treeRef.current.forceUpdate();
-      // console.log("readyqueue: ", readyqueue);
-      sched_flag = true;
+      // console.log("tasks: ", tasks);
+      update_flag = true;
+    }
+    if (current_task == "") sched_flag = true;
+    if (update_flag == true) {
+      update_slice_all(); //update schedule enitities that added to runqueue
     }
     if (sched_flag == true) schedule();
+    console.log("rbt: ");
+    console.log(rbt.root);
+    console.log("tasks data: ");
+    console.log(tasks);
+    console.log("current task: ", current_task);
     console.log("\n\n");
+
+    sched_flag = false;
+    update_flag = false;
   };
+
+  function update_slice_all() {
+    for (const [key, se] of tasks) {
+      // console.log("update ", key, se);
+      if (se.arrival_time > clock) continue;
+      update_slice(key);
+    }
+  }
+
+  function update_slice(key) {
+    var timeslice = calc_slice(key);
+    var se = tasks.get(key);
+    tasks.set(
+      key,
+      new Sched(
+        se.arrival_time,
+        se.burst_time,
+        se.nice,
+        se.exec_start,
+        se.sum_exec_runtime,
+        se.vruntime,
+        timeslice,
+        true
+      )
+    );
+    tasks.set(key, tasks.get(key));
+  }
 
   function sched_tick() {
     if (current_task === "") return;
 
     //update exec runtime
     update_exec(current_task);
-    var se = readyqueue.get(current_task);
-    console.log(se);
-    if (se.timeslice <= 0) {
-      //ran out of timeslice
-      sched_flag = true;
-    } else if (se.sum_exec_runtime >= se.burst_time) {
+    var se = tasks.get(current_task);
+
+    if (se.sum_exec_runtime >= se.burst_time) {
       //finish execute
+      console.log(current_task, " has finished execution");
+      current_task = "";
+      sched_flag = true;
+    } else if (clock - se.exec_start >= se.timeslice) {
+      //ran out of timeslice
+      console.log(current_task, " has finished timeslice");
+      update_vruntime(current_task);
+      current_task = "";
       sched_flag = true;
     }
   }
 
+  function update_vruntime(key) {
+    var vruntime = calc_vruntime(key);
+    console.log(vruntime);
+  }
+
   function update_exec(key) {
-    console.log(readyqueue);
-    var se = readyqueue.get(key);
-    console.log(se);
-    readyqueue.set(
+    var se = tasks.get(key);
+
+    tasks.set(
       key,
       new Sched(
         se.arrival_time,
-        se.burst_time - 1,
+        se.burst_time,
         se.nice,
         se.exec_start,
-        clock - se.exec_start,
-        0,
-        se.timeslice - 1
+        se.sum_exec_runtime + 1,
+        se.vruntime,
+        se.timeslice,
+        se.on_rq
       )
     );
-    tasks.set(key, readyqueue.get(key));
+    // tasks.set(key, tasks.get(key));
   }
 
   function schedule() {
     var min = rbt.get_min(rbt.root); //get smallest vruntime from rbt
-    var se = readyqueue.get(min.key); //get schedule entity that has smallest vruntime
+    var se = tasks.get(min.key); //get schedule entity that has smallest vruntime
 
-    console.log(min.key, " has the smallest vruntime");
+    update_slice_init(min.key);
 
-    update_slice(min.key); //update its timeslice and exec_start
+    console.log(min.key, " has the smallest vruntime : ", se.vruntime);
 
-    console.log(readyqueue.get(min.key));
-
-    se = readyqueue.get(min.key); //get updated schedule entity
+    se = tasks.get(min.key); //get updated schedule entity
     rbt.remove(min.key, se.vruntime); //remove schedule entity from rbt
 
     current_task = min.key;
-    console.log("current task: ", current_task);
   }
 
-  function update_slice(key) {
+  function update_slice_init(key) {
     var timeslice = calc_slice(key);
-    var se = readyqueue.get(key);
-    readyqueue.set(
+    var se = tasks.get(key);
+    tasks.set(
       key,
-      new Sched(se.arrival_time, se.burst_time, se.nice, clock, 0, 0, timeslice)
+      new Sched(
+        se.arrival_time,
+        se.burst_time,
+        se.nice,
+        clock,
+        0,
+        0,
+        timeslice,
+        true
+      )
     );
-    tasks.set(key, readyqueue.get(key));
+    tasks.set(key, tasks.get(key));
   }
 
   function get_nice(nice) {
@@ -153,7 +205,7 @@ function App() {
 
   function calc_vruntime(key) {
     var vruntime = 0;
-    var se = readyqueue.get(key); //schedule entity
+    var se = tasks.get(key); //schedule entity
     var weight = get_nice(se.nice);
     var delta_exec = clock - se.exec_start;
     vruntime = se.vruntime + get_nice(0) * (delta_exec / weight);
@@ -163,10 +215,13 @@ function App() {
   function calc_slice(key) {
     var timeslice = 0;
     var target_latency = Math.max(num * sched_min_granularity, sched_latency);
-    var se = readyqueue.get(key); //schedule entity
+    var se = tasks.get(key); //schedule entity
     var weight = get_nice(se.nice);
     var total_weight = 0;
-    for (const i of readyqueue.values()) total_weight += get_nice(i.nice);
+    for (const i of tasks.values()) {
+      if (i.arrival_time > clock) continue;
+      total_weight += get_nice(i.nice);
+    }
     timeslice = target_latency * (weight / total_weight);
     return timeslice;
   }
