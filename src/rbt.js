@@ -10,7 +10,7 @@ class Node {
     this.parent = null;
   }
 }
-class RBTree {
+export class RBTree {
   constructor() {
     this.root = null;
     this.size = 0;
