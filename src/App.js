@@ -28,16 +28,17 @@ function App() {
   const [rbtProps, setRbtProps] = useState(new RBTree());
 
   const handleSimulate = () => {
-    rbt = new RBTree();
-    tasks = new Map();
-    timequeue = new Map();
-    const input = document.getElementById("tasks").value;
+    data_init();
+
     //parse input
+    const input = document.getElementById("tasks").value;
     const ary = input.split("\n");
 
     var n = parseInt(ary[0]);
     num = n;
     n = 1;
+
+    //add create timequeue with arrival time
     while (n <= num) {
       var tmp = ary[n].split(" ");
       const sched = new Sched(tmp[1], tmp[2], tmp[3]);
@@ -58,8 +59,7 @@ function App() {
     // }, 100);
   };
   const handleNext = () => {
-    // rbt.printTree(rbt.root);
-    // console.log(timequeue);
+    if (finish_flag) return;
     clock++;
     console.log("CPU Time : ", clock);
     if (clock === 0) {
@@ -100,6 +100,17 @@ function App() {
       update_flag = false;
     }
   };
+
+  function data_init() {
+    rbt = new RBTree();
+    tasks = new Map();
+    timequeue = new Map();
+    sched_flag = false;
+    update_flag = false;
+    finish_flag = false;
+    clock = -1;
+    current_task = "";
+  }
 
   function update_slice_all() {
     for (const [key, se] of tasks) {
