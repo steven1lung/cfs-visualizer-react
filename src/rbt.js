@@ -1,13 +1,14 @@
 const RED = true;
 const BLACK = false;
 class Node {
-  constructor(key, value) {
+  constructor(key, value, id) {
     this.key = key;
     this.value = value;
     this.left = null;
     this.right = null;
     this.color = RED;
     this.parent = null;
+    this.id = id;
   }
 }
 export class RBTree {
@@ -23,10 +24,10 @@ export class RBTree {
   */
   insert(key, value) {
     if (!this.root) {
-      this.root = new Node(key, value);
+      this.root = new Node(key, value, this.size);
       this.root.color = BLACK;
     } else {
-      let node = this.__insert(key, value);
+      let node = this.__insert(key, value, this.size);
       this.__insert_fix(node);
       //   console.log(node);
     }
@@ -34,19 +35,19 @@ export class RBTree {
     this.size++;
   }
 
-  __insert(key, value) {
+  __insert(key, value, size) {
     let node = this.root;
     while (node) {
       if (value < node.value) {
         if (!node.left) {
-          node.left = new Node(key, value);
+          node.left = new Node(key, value, size);
           node.left.parent = node;
           return node.left;
         }
         node = node.left;
       } else {
         if (!node.right) {
-          node.right = new Node(key, value);
+          node.right = new Node(key, value, size);
           node.right.parent = node;
           return node.right;
         }

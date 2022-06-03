@@ -2,9 +2,12 @@ import React, { useState, useRef } from "react";
 import "./styles/App.css";
 import { RBTree } from "./rbt";
 import { Sched } from "./sched";
-import Tree from "./render";
+import { Tree } from "./render";
+import Graph from "react-graph-vis";
+import { v4 as uuidv4 } from "uuid";
+import cloneDeep from "lodash/cloneDeep";
 
-var clock = -1;
+var clock = 0;
 var rbt = new RBTree();
 var tasks = new Map();
 var num;
@@ -16,6 +19,7 @@ var results = "";
 var task_seq = "";
 var startSimulate = false;
 var expected_runtime = 0;
+var null_node_id = 1000;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -27,10 +31,122 @@ const sched_prio_to_weight = [
   423, 335, 272, 215, 172, 137, 110, 87, 70, 56, 45, 36, 29, 23, 18, 15,
 ];
 
+const graph = {
+  nodes: [],
+  edges: [],
+};
+
+const options = {
+  nodes: {
+    borderWidth: 2,
+    font: "30px arial white",
+    shape: "circle",
+  },
+  layout: {
+    hierarchical: {
+      enabled: true,
+      sortMethod: "directed",
+    },
+  },
+  edges: {
+    color: "#000000",
+    smooth: true,
+    width: 1,
+    length: 10000,
+  },
+  height: "100%",
+  width: "100%",
+  manipulation: {
+    enabled: false,
+    initiallyActive: false,
+    editEdge: false,
+    deleteNode: false,
+    deleteEdge: false,
+  },
+  interaction: {
+    dragNodes: false,
+    dragView: true,
+    hideEdgesOnDrag: false,
+    hideNodesOnDrag: false,
+    hover: false,
+    hoverConnectedEdges: false,
+    keyboard: {
+      enabled: false,
+    },
+    multiselect: false,
+    navigationButtons: false,
+    selectable: false,
+    selectConnectedEdges: false,
+    zoomView: false,
+  },
+  physics: false,
+};
+
 function App() {
-  const [rbtProps, setRbtProps] = useState(new RBTree());
   const [showResult, setShowResult] = useState("");
-  const resultRef = useRef();
+  const [graphData, setGraphData] = useState(graph);
+  const [clockShow, setClockShow] = useState(0);
+
+  const generateGraph = (e) => {
+    var newGraph = { nodes: [], edges: [] };
+    dfs(rbt.root);
+    console.log(newGraph);
+    setGraphData(newGraph);
+
+    function dfs(node) {
+      if (!node) return;
+      dfs(node.left);
+      // console.log(node.key, " ", node.value);
+      const newNode = {
+        id: node.id,
+        label: node.key,
+        color: node.color ? "red" : "black",
+      };
+      newGraph.nodes.push(newNode);
+      if (node.left && node.parent != node) {
+        const leftEdge = {
+          from: node.id,
+          to: node.left.id,
+        };
+        newGraph.edges.push(leftEdge);
+      } else {
+        const leftNode = {
+          id: null_node_id,
+          label: "n",
+          color: "black",
+        };
+        const leftEdge = {
+          from: node.id,
+          to: null_node_id++,
+        };
+        newGraph.nodes.push(leftNode);
+        newGraph.edges.push(leftEdge);
+      }
+      if (node.right && node.parent != node) {
+        const rightEdge = {
+          from: node.id,
+          to: node.right.id,
+        };
+        newGraph.edges.push(rightEdge);
+      } else {
+        const rightNode = {
+          id: null_node_id,
+          label: "n",
+          color: "black",
+        };
+        const rightEdge = {
+          from: node.id,
+          to: null_node_id++,
+        };
+        newGraph.nodes.push(rightNode);
+        newGraph.edges.push(rightEdge);
+      }
+      // console.log(newNode);
+
+      dfs(node.right);
+    }
+  };
+
   const handleSimulate = () => {
     startSimulate = true;
     data_init();
@@ -41,7 +157,6 @@ function App() {
 
     var n = parseInt(ary[0].split(" ")[0]);
     expected_runtime = parseInt(ary[0].split(" ")[1]);
-    console.log(expected_runtime);
     num = n;
     n = 1;
 
@@ -73,6 +188,7 @@ function App() {
     }
     if (finish_flag) return;
     clock++;
+    setClockShow(clockShow + 1);
     results += `CPU Time: ${clock}\n`;
     console.log("CPU Time : ", clock);
     if (clock === 0) {
@@ -91,6 +207,8 @@ function App() {
       }
       // treeRef.current.forceUpdate();
       // console.log("tasks: ", tasks);
+      console.log(rbt.root);
+
       update_flag = true;
     }
     if (current_task == "") sched_flag = true;
@@ -100,14 +218,12 @@ function App() {
     if (sched_flag) schedule();
 
     if (clock > expected_runtime) finish_flag = true;
-    if (finish_flag) {
-      write_finishe_buffer();
-    } else {
-      write_buffer();
-    }
+    if (finish_flag) write_finish_buffer();
+    else write_buffer();
+    generateGraph();
   };
 
-  function write_finishe_buffer() {
+  function write_finish_buffer() {
     results += `Finish scheduling simulate\n`;
     console.log("Finish scheduling simulate");
     task_seq += "]\n";
@@ -141,7 +257,7 @@ function App() {
     sched_flag = false;
     update_flag = false;
     finish_flag = false;
-    clock = -1;
+    clock = 0;
     current_task = "";
     results = "";
     task_seq = "\n[ ";
@@ -359,9 +475,8 @@ function App() {
         <p className="description" id="RB-Tree">
           RB-Tree
         </p>
-        <div className="card2">
-          <Tree />
-          {/* {startSimulate && <rbt.Node_div num={num} />} */}
+        <div className="rbt">
+          <Graph key={uuidv4} graph={graphData} options={options} />
         </div>
         <button onClick={handleNext}>Next Clock</button>
         <p className="description" id="results">

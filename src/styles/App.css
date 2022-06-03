@@ -51,7 +51,7 @@
 }
 
 .description {
-  margin: 4rem 0;
+  margin: 2rem 0;
   line-height: 1.5;
   font-size: 1.5rem;
 }
@@ -79,8 +79,16 @@
   width: 700px;
   height: 300px;
   justify-content: center;
+}
 
-
+.rbt {
+  margin: 1rem;
+  /* padding: 1.5rem; */
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  width: 700px;
+  height: 70vh;
+ 
 }
 
 .grid {
