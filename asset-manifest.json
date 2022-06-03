@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/cfs-visualizer-react/static/css/main.9bbd95ed.css",
+    "main.js": "/cfs-visualizer-react/static/js/main.80a6f5d9.js",
+    "index.html": "/cfs-visualizer-react/index.html",
+    "main.9bbd95ed.css.map": "/cfs-visualizer-react/static/css/main.9bbd95ed.css.map",
+    "main.80a6f5d9.js.map": "/cfs-visualizer-react/static/js/main.80a6f5d9.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9bbd95ed.css",
+    "static/js/main.80a6f5d9.js"
+  ]
+}
