@@ -15,6 +15,7 @@ var finish_flag = false;
 var results = "";
 var task_seq = "";
 var startSimulate = false;
+var expected_runtime = 0;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -38,7 +39,9 @@ function App() {
     const input = document.getElementById("tasks").value;
     const ary = input.split("\n");
 
-    var n = parseInt(ary[0]);
+    var n = parseInt(ary[0].split(" ")[0]);
+    expected_runtime = parseInt(ary[0].split(" ")[1]);
+    console.log(expected_runtime);
     num = n;
     n = 1;
 
@@ -96,39 +99,40 @@ function App() {
     }
     if (sched_flag) schedule();
 
+    if (clock > expected_runtime) finish_flag = true;
     if (finish_flag) {
       write_finishe_buffer();
     } else {
       write_buffer();
     }
-
-    function write_finishe_buffer() {
-      results += `Finish scheduling simulate\n`;
-      console.log("Finish scheduling simulate");
-      task_seq += "]\n";
-      results += task_seq;
-      setShowResult(results);
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.getElementById("results").offsetTop,
-          behavior: "smooth",
-        });
-      }, 100);
-    }
-
-    function write_buffer() {
-      results += `current running task: ${current_task}\n\n\n`;
-      console.log("rbt: ");
-      console.log(rbt.root);
-      console.log("tasks data: ");
-      console.log(tasks);
-      console.log("current task: ", current_task);
-      console.log("\n\n");
-      task_seq += `${current_task} `;
-      sched_flag = false;
-      update_flag = false;
-    }
   };
+
+  function write_finishe_buffer() {
+    results += `Finish scheduling simulate\n`;
+    console.log("Finish scheduling simulate");
+    task_seq += "]\n";
+    results += task_seq;
+    setShowResult(results);
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.getElementById("results").offsetTop,
+        behavior: "smooth",
+      });
+    }, 100);
+  }
+
+  function write_buffer() {
+    results += `current running task: ${current_task}\n\n\n`;
+    console.log("rbt: ");
+    console.log(rbt.root);
+    console.log("tasks data: ");
+    console.log(tasks);
+    console.log("current task: ", current_task);
+    console.log("\n\n");
+    task_seq += `${current_task} `;
+    sched_flag = false;
+    update_flag = false;
+  }
 
   function data_init() {
     rbt = new RBTree();
@@ -141,6 +145,7 @@ function App() {
     current_task = "";
     results = "";
     task_seq = "\n[ ";
+    expected_runtime = 0;
     setShowResult("");
   }
 
@@ -347,7 +352,7 @@ function App() {
           id="tasks"
           name="tasks"
           className="card"
-          defaultValue={"3\nA 1 3 0\nB 2 4 -2\nC 2 3 2"}
+          defaultValue={"3 10\nA 1 3 0\nB 2 4 -2\nC 2 3 2"}
         ></textarea>
         <button onClick={handleSimulate}>Simulate</button>
 
