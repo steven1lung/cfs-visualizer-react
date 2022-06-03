@@ -1,7 +1,3 @@
-import Graph from "react-graph-vis";
-import { RBTree } from "./rbt";
-import React, { useState } from "react";
-
 const nodes = [
   { id: 1, label: "A", color: "black" },
   { id: 2, label: "B", color: "red" },
@@ -20,22 +16,21 @@ const edges = [
   { from: 3, to: 7 },
 ];
 
-const options = {
+export const options = {
   nodes: {
     borderWidth: 2,
-    font: "80px arial white",
+    font: "30px arial white",
     shape: "circle",
   },
   layout: {
     hierarchical: {
-      enabled: true,
       sortMethod: "directed",
     },
   },
   edges: {
     color: "#000000",
     smooth: true,
-    width: 5,
+    width: 1,
   },
   height: "100%",
   width: "100%",
@@ -65,13 +60,13 @@ const options = {
   physics: false,
 };
 
-export function Tree() {
-  const [nd, setNd] = useState([]);
-  const [ed, setEd] = useState([]);
+// export function Tree() {
+//   const [nd, setNd] = useState([]);
+//   const [ed, setEd] = useState([]);
 
-  return <Graph graph={{ nodes: nd, edges: ed }} options={options} />;
+//   return <Graph graph={{ nodes: nd, edges: ed }} options={options} />;
 
-  function addNode() {
-    setNd([{ id: 1, label: "A", color: "black" }]);
-  }
-}
+//   function addNode() {
+//     setNd([{ id: 1, label: "A", color: "black" }]);
+//   }
+// }

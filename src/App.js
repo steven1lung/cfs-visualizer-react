@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import "./styles/App.css";
 import { RBTree } from "./rbt";
 import { Sched } from "./sched";
-import { Tree } from "./render";
+import { options } from "./render";
 import Graph from "react-graph-vis";
 import { v4 as uuidv4 } from "uuid";
 import cloneDeep from "lodash/cloneDeep";
@@ -36,52 +36,6 @@ const graph = {
   edges: [],
 };
 
-const options = {
-  nodes: {
-    borderWidth: 2,
-    font: "30px arial white",
-    shape: "circle",
-  },
-  layout: {
-    hierarchical: {
-      // enabled: true,
-      sortMethod: "directed",
-    },
-  },
-  edges: {
-    color: "#000000",
-    smooth: true,
-    width: 1,
-    length: 10000,
-  },
-  height: "100%",
-  width: "100%",
-  manipulation: {
-    enabled: false,
-    initiallyActive: false,
-    editEdge: false,
-    deleteNode: false,
-    deleteEdge: false,
-  },
-  interaction: {
-    dragNodes: false,
-    dragView: false,
-    hideEdgesOnDrag: false,
-    hideNodesOnDrag: false,
-    hover: false,
-    hoverConnectedEdges: false,
-    keyboard: {
-      enabled: false,
-    },
-    multiselect: false,
-    navigationButtons: false,
-    selectable: false,
-    selectConnectedEdges: false,
-    zoomView: false,
-  },
-  physics: false,
-};
-
 function App() {
   const [showResult, setShowResult] = useState("");
   const [graphData, setGraphData] = useState(graph);
@@ -91,11 +45,12 @@ function App() {
     var newGraph = { nodes: [], edges: [] };
     dfs(rbt.root);
     console.log(newGraph);
-
+    newGraph.edges.reverse();
     setGraphData(newGraph);
 
     function dfs(node) {
       if (!node) return;
+
       // console.log(node.key, " ", node.value);
       const newNode = {
         id: node.id,
