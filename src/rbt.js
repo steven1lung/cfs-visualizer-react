@@ -178,6 +178,7 @@ export class RBTree {
   }
 
   __remove_fix(node) {
+    if (!node) return;
     while (node !== this.root && node.color == BLACK) {
       if (node == node.parent.left) {
         var w = node.parent.right;
@@ -267,8 +268,8 @@ export class RBTree {
 }
 
 // const bst = new RBTree();
-// bst.insert("A", 123);
-// bst.insert("A", 3);
+// bst.insert("B", 123);
+// bst.insert("B", 3);
 // bst.insert("A", -2);
 // bst.insert("A", 9123);
 // bst.insert("A", 230);
