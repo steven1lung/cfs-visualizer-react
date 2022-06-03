@@ -168,7 +168,6 @@ export class RBTree {
     if (prev_color == BLACK) {
       this.__remove_fix(x);
     }
-    this.size--;
   }
 
   transplant(a, b) {

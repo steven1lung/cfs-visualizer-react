@@ -19,7 +19,7 @@ var results = "";
 var task_seq = "";
 var startSimulate = false;
 var expected_runtime = 0;
-var null_node_id = 1000;
+var null_node_id = -1;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -44,7 +44,7 @@ const options = {
   },
   layout: {
     hierarchical: {
-      enabled: true,
+      // enabled: true,
       sortMethod: "directed",
     },
   },
@@ -65,7 +65,7 @@ const options = {
   },
   interaction: {
     dragNodes: false,
-    dragView: true,
+    dragView: false,
     hideEdgesOnDrag: false,
     hideNodesOnDrag: false,
     hover: false,
@@ -91,11 +91,11 @@ function App() {
     var newGraph = { nodes: [], edges: [] };
     dfs(rbt.root);
     console.log(newGraph);
+
     setGraphData(newGraph);
 
     function dfs(node) {
       if (!node) return;
-      dfs(node.left);
       // console.log(node.key, " ", node.value);
       const newNode = {
         id: node.id,
@@ -103,13 +103,7 @@ function App() {
         color: node.color ? "red" : "black",
       };
       newGraph.nodes.push(newNode);
-      if (node.left && node.parent != node) {
-        const leftEdge = {
-          from: node.id,
-          to: node.left.id,
-        };
-        newGraph.edges.push(leftEdge);
-      } else {
+      if (!node.left) {
         const leftNode = {
           id: null_node_id,
           label: "n",
@@ -117,18 +111,19 @@ function App() {
         };
         const leftEdge = {
           from: node.id,
-          to: null_node_id++,
+          to: null_node_id--,
         };
         newGraph.nodes.push(leftNode);
         newGraph.edges.push(leftEdge);
-      }
-      if (node.right && node.parent != node) {
-        const rightEdge = {
-          from: node.id,
-          to: node.right.id,
-        };
-        newGraph.edges.push(rightEdge);
       } else {
+        const leftEdge = {
+          from: node.id,
+          to: node.left.id,
+        };
+        newGraph.edges.push(leftEdge);
+      }
+
+      if (!node.right) {
         const rightNode = {
           id: null_node_id,
           label: "n",
@@ -136,13 +131,20 @@ function App() {
         };
         const rightEdge = {
           from: node.id,
-          to: null_node_id++,
+          to: null_node_id--,
         };
         newGraph.nodes.push(rightNode);
         newGraph.edges.push(rightEdge);
+      } else {
+        const rightEdge = {
+          from: node.id,
+          to: node.right.id,
+        };
+        newGraph.edges.push(rightEdge);
       }
-      // console.log(newNode);
 
+      // console.log(newNode);
+      dfs(node.left);
       dfs(node.right);
     }
   };
@@ -453,7 +455,8 @@ function App() {
           <p>Rules: </p>
           <p>
             1. First line defines{" "}
-            <a className="enlarge-text">the total number of tasks</a>
+            <a className="enlarge-text">the total number of tasks</a>,
+            <a className="enlarge-text"> total runtime</a>
           </p>
           <p>
             2. Then each line defines the tasks in the order of:{" "}
@@ -474,6 +477,9 @@ function App() {
 
         <p className="description" id="RB-Tree">
           RB-Tree
+        </p>
+        <p>
+          {clock} {current_task}
         </p>
         <div className="rbt">
           <Graph key={uuidv4} graph={graphData} options={options} />
