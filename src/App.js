@@ -497,7 +497,7 @@ function App() {
 
       <footer className="footer">
         <a
-          href="https://github.com/steven1lung"
+          href="https://github.com/steven1lung/cfs-visualizer-react"
           target="_blank"
           rel="noopener noreferrer"
         >
