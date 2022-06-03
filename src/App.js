@@ -12,6 +12,9 @@ var timequeue = new Map();
 var sched_flag = false;
 var update_flag = false;
 var finish_flag = false;
+var results = "";
+var task_seq = "";
+var startSimulate = false;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -24,10 +27,11 @@ const sched_prio_to_weight = [
 ];
 
 function App() {
-  const [startSimulate, setStartSimulate] = useState(false);
   const [rbtProps, setRbtProps] = useState(new RBTree());
-
+  const [showResult, setShowResult] = useState("");
+  const resultRef = useRef();
   const handleSimulate = () => {
+    startSimulate = true;
     data_init();
 
     //parse input
@@ -51,16 +55,22 @@ function App() {
     }
 
     //scroll to red black tree
-    // setTimeout(() => {
-    //   window.scrollTo({
-    //     top: document.getElementById("RB-Tree").offsetTop,
-    //     behavior: "smooth",
-    //   });
-    // }, 100);
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.getElementById("RB-Tree").offsetTop,
+        behavior: "smooth",
+      });
+    }, 100);
   };
+
   const handleNext = () => {
+    if (!startSimulate) {
+      alert("Please define the tasks first");
+      return;
+    }
     if (finish_flag) return;
     clock++;
+    results += `CPU Time: ${clock}\n`;
     console.log("CPU Time : ", clock);
     if (clock === 0) {
       print_init();
@@ -87,15 +97,34 @@ function App() {
     if (sched_flag) schedule();
 
     if (finish_flag) {
-      console.log("finish scheduling simulate");
+      write_finishe_buffer();
     } else {
+      write_buffer();
+    }
+
+    function write_finishe_buffer() {
+      results += `Finish scheduling simulate\n`;
+      console.log("Finish scheduling simulate");
+      task_seq += "]\n";
+      results += task_seq;
+      setShowResult(results);
+      setTimeout(() => {
+        window.scrollTo({
+          top: document.getElementById("results").offsetTop,
+          behavior: "smooth",
+        });
+      }, 100);
+    }
+
+    function write_buffer() {
+      results += `current running task: ${current_task}\n\n\n`;
       console.log("rbt: ");
       console.log(rbt.root);
       console.log("tasks data: ");
       console.log(tasks);
       console.log("current task: ", current_task);
       console.log("\n\n");
-
+      task_seq += `${current_task} `;
       sched_flag = false;
       update_flag = false;
     }
@@ -110,6 +139,9 @@ function App() {
     finish_flag = false;
     clock = -1;
     current_task = "";
+    results = "";
+    task_seq = "\n[ ";
+    setShowResult("");
   }
 
   function update_slice_all() {
@@ -148,12 +180,14 @@ function App() {
 
     if (se.sum_exec_runtime >= se.burst_time) {
       //finish execute
+      results += `${current_task} has finished execution\n`;
       console.log(current_task, " has finished execution");
       tasks.delete(current_task);
       current_task = "";
       sched_flag = true;
     } else if (clock - se.exec_start >= se.timeslice) {
       //ran out of timeslice
+      results += `${current_task} has finished its timeslice of ${se.timeslice}\n`;
       console.log(current_task, " has finished timeslice");
       update_vruntime(current_task);
       current_task = "";
@@ -163,6 +197,7 @@ function App() {
 
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
+    results += `Update ${key}'s vruntime to: ${vruntime}\n`;
     console.log("Update ", key, "'s vruntime to : ", vruntime);
     var se = tasks.get(key);
     tasks.set(
@@ -211,7 +246,8 @@ function App() {
     if (se.sum_exec_runtime == 0) update_slice_init(min.key);
     else update_slice(min.key);
 
-    console.log(min.key, " has the smallest vruntime : ", se.vruntime);
+    results += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
+    console.log(min.key, " has the smallest vruntime: ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
     rbt.remove(); //remove schedule entity from rbt
@@ -271,6 +307,12 @@ function App() {
     console.log("sched_min_granularity: ", sched_min_granularity);
     console.log("sched_wakeup_granularity: ", sched_wakeup_granularity);
     console.log("\n\n");
+
+    results += `Scheduler Init\n`;
+    results += `Constants are listed below: \n`;
+    results += `sched_latency: ${sched_latency}\n`;
+    results += `sched_min_granularity: ${sched_min_granularity}\n`;
+    results += `sched_wakeup_granularity: ${sched_wakeup_granularity}\n\n\n`;
   }
 
   return (
@@ -286,6 +328,20 @@ function App() {
 
         <p className="description">Get started by defining the tasks</p>
 
+        <div>
+          <p>Rules: </p>
+          <p>
+            1. First line defines{" "}
+            <a className="enlarge-text">the total number of tasks</a>
+          </p>
+          <p>
+            2. Then each line defines the tasks in the order of:{" "}
+            <a className="enlarge-text">task name</a>,{" "}
+            <a className="enlarge-text">arrival time</a>,{" "}
+            <a className="enlarge-text">burst time</a>,{" "}
+            <a className="enlarge-text">nice value</a>
+          </p>
+        </div>
         <textarea
           type="text"
           id="tasks"
@@ -306,7 +362,11 @@ function App() {
         <p className="description" id="results">
           Results
         </p>
-        <div className="card">Results of scheduling</div>
+        <textarea
+          readOnly
+          className="card2"
+          defaultValue={showResult}
+        ></textarea>
       </main>
 
       <footer className="footer">
