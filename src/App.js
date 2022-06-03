@@ -11,6 +11,7 @@ var num;
 var timequeue = new Map();
 var sched_flag = false;
 var update_flag = false;
+var finish_flag = false;
 //scheduler variables
 var current_task = "";
 const sched_latency = 6;
@@ -80,19 +81,24 @@ function App() {
       update_flag = true;
     }
     if (current_task == "") sched_flag = true;
-    if (update_flag == true) {
+    if (update_flag) {
       update_slice_all(); //update schedule enitities that added to runqueue
     }
-    if (sched_flag == true) schedule();
-    console.log("rbt: ");
-    console.log(rbt.root);
-    console.log("tasks data: ");
-    console.log(tasks);
-    console.log("current task: ", current_task);
-    console.log("\n\n");
+    if (sched_flag) schedule();
 
-    sched_flag = false;
-    update_flag = false;
+    if (finish_flag) {
+      console.log("finish scheduling simulate");
+    } else {
+      console.log("rbt: ");
+      console.log(rbt.root);
+      console.log("tasks data: ");
+      console.log(tasks);
+      console.log("current task: ", current_task);
+      console.log("\n\n");
+
+      sched_flag = false;
+      update_flag = false;
+    }
   };
 
   function update_slice_all() {
@@ -132,6 +138,7 @@ function App() {
     if (se.sum_exec_runtime >= se.burst_time) {
       //finish execute
       console.log(current_task, " has finished execution");
+      tasks.delete(current_task);
       current_task = "";
       sched_flag = true;
     } else if (clock - se.exec_start >= se.timeslice) {
@@ -184,9 +191,14 @@ function App() {
 
   function schedule() {
     var min = rbt.get_min(rbt.root); //get smallest vruntime from rbt
+    if (!min) {
+      finish_flag = true;
+      return;
+    }
     var se = tasks.get(min.key); //get schedule entity that has smallest vruntime
 
-    update_slice_init(min.key);
+    if (se.sum_exec_runtime == 0) update_slice_init(min.key);
+    else update_slice(min.key);
 
     console.log(min.key, " has the smallest vruntime : ", se.vruntime);
 
