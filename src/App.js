@@ -141,6 +141,12 @@ function App() {
   const handleNext = () => {
     if (!startSimulate) {
       alert("Please define the tasks first");
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }, 100);
       return;
     }
     if (finish_flag) return;
