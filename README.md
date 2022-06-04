@@ -1,70 +1,59 @@
-# Getting Started with Create React App
+# Linux CFS Visualizer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is to visualize the linux kernel Completely Fair Scheduler. Including the data structure used to store the tasks: a red black tree. 
 
-## Available Scripts
+The website is availabe at : https://steven1lung.github.io/cfs-visualizer-react/
 
-In the project directory, you can run:
+## Input format
+```
+3 10
+A 1 3 0
+B 2 4 -2
+C 2 3 2
+```
+The fisrt line defines that there are 3 tasks and the total runtime is 10. Then each line describes the tasks in the order of: task name, arrival time, burst time, nice value.
 
-### `npm start`
+So the second line would define a task naming 'A', would arrive at clock=1, has to run for 3 clocks, and its nice value is 0.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## CFS
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+CFS introduces virtual runtime to the the scheduling method, which rescribes how much time the task has been running on an 'ideal' machine. So every time a schedule needs to be triggered, the scheduler tends to pick the task whose virtual runtime is the least. Which means to pick the task that the running time on an ideal machine is the least so fa.
 
-### `npm test`
+### Scheduling Parameters
+1. `sched_latency`
+  > The latency of the scheduler, the default would be 6.
+2. `sched_min_granularity`
+  > The minimum time a task should run. Default would be 0.75.
+3. `sched_wakeup_granularity`
+  > A woken task would not be able to preempt the current task while its virtual runtime is greater than the current's. However, if the virtual time difference between the two tasks is smaller than `sched_wakeup_granularity`, then the woken task would still be able to preempt the current task. Default would be 1.
+4. `target_latency`
+  > Ensures every task to be executed once, so the value would be `max(n * sched_min_granularity, sched_latency)`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Creating a task
 
-### `npm run build`
+There are some variables needed to create a task:
+1. Arrival time
+2. Burst time
+3. Nice value (-20 ~ +19)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The created task would be inserted to the red black tree when the task arrives.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### When a schedule happens
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+1. The task with the smallest `vruntime` is picked.
+2. The chosen task would be removed from the red black tree.
+3. The task would be given a timeslice: `timesclice = target_latency * (task_weight / total_weight)`.
 
-### `npm run eject`
+### When a task is being executed
+1. Update its total runtime which is `sum_exec_runtime`.
+2. Update its virtual runtime.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+#### A brief of Linux scheduler can be found here: https://hackmd.io/@steven1lung/scheduler_notes
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### References
+https://elixir.free-electrons.com/linux/v5.10/source/include/linux/sched.h
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+https://developer.ibm.com/tutorials/l-completely-fair-scheduler/
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+https://github.com/nihal111/CFS-visualizer
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
