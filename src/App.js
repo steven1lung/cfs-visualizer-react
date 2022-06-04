@@ -22,6 +22,7 @@ var expected_runtime = 0;
 var null_node_id = -1;
 //scheduler variables
 var current_task = "";
+var current_show = "";
 const sched_latency = 6;
 const sched_min_granularity = 0.75;
 const sched_wakeup_granularity = 1;
@@ -150,6 +151,7 @@ function App() {
       return;
     }
     if (finish_flag) return;
+    current_show = "";
     clock++;
     setClockShow(clockShow + 1);
     results += `CPU Time: ${clock}\n`;
@@ -167,6 +169,7 @@ function App() {
     if (cur) {
       for (var i of cur) {
         rbt.insert(i, tasks.get(i).vruntime);
+        current_show += `${i} arrives, insert ${i} to rbt\n\n`;
       }
       // treeRef.current.forceUpdate();
       // console.log("tasks: ", tasks);
@@ -183,6 +186,9 @@ function App() {
     if (clock > expected_runtime) finish_flag = true;
     if (finish_flag) write_finish_buffer();
     else write_buffer();
+    if (current_show == "") {
+      current_show = `No scheduling in this clock\n`;
+    }
     generateGraph();
   };
 
@@ -225,6 +231,7 @@ function App() {
     results = "";
     task_seq = "\n[ ";
     expected_runtime = 0;
+    current_show = "";
     setShowResult("");
   }
 
@@ -265,6 +272,7 @@ function App() {
     if (se.sum_exec_runtime >= se.burst_time) {
       //finish execute
       results += `${current_task} has finished execution\n`;
+      current_show += `${current_task} has finished execution\n`;
       console.log(current_task, " has finished execution");
       tasks.delete(current_task);
       current_task = "";
@@ -272,6 +280,7 @@ function App() {
     } else if (clock - se.exec_start >= se.timeslice) {
       //ran out of timeslice
       results += `${current_task} has finished its timeslice of ${se.timeslice}\n`;
+      current_show += `${current_task} has finished execution\n`;
       console.log(current_task, " has finished timeslice");
       update_vruntime(current_task);
       current_task = "";
@@ -282,6 +291,7 @@ function App() {
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
     results += `Update ${key}'s vruntime to: ${vruntime}\n`;
+    current_show += `Update ${key}'s vruntime to: ${vruntime} \nInsert ${key} to rbt\n`;
     console.log("Update ", key, "'s vruntime to : ", vruntime);
     var se = tasks.get(key);
     tasks.set(
@@ -325,16 +335,19 @@ function App() {
       finish_flag = true;
       return;
     }
+    current_show += "Schedule triggered\n\n";
     var se = tasks.get(min.key); //get schedule entity that has smallest vruntime
 
     if (se.sum_exec_runtime == 0) update_slice_init(min.key);
     else update_slice(min.key);
 
     results += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
+    current_show += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
     console.log(min.key, " has the smallest vruntime: ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
     rbt.remove(); //remove schedule entity from rbt
+    current_show += `Remove ${min.key} from rbt and execute it\n`;
     current_task = min.key;
   }
 
@@ -417,14 +430,18 @@ function App() {
           <p>
             1. First line defines{" "}
             <a className="enlarge-text">the total number of tasks</a>,
-            <a className="enlarge-text"> total runtime</a>
+            <a className="enlarge-text"> total runtime</a>.
           </p>
           <p>
             2. Then each line defines the tasks in the order of:{" "}
             <a className="enlarge-text">task name</a>,{" "}
             <a className="enlarge-text">arrival time</a>,{" "}
             <a className="enlarge-text">burst time</a>,{" "}
-            <a className="enlarge-text">nice value</a>
+            <a className="enlarge-text">nice value</a>.
+          </p>
+          <p>
+            3. The red black tree below would describe the status at{" "}
+            <a className="enlarge-text">the end</a> of each clock.
           </p>
         </div>
         <textarea
@@ -439,12 +456,21 @@ function App() {
         <p className="description" id="RB-Tree">
           RB-Tree
         </p>
-        <p>
-          {clock} {current_task}
-        </p>
+        <div></div>
         <div className="rbt">
+          <p className="clock">{clock}</p>
+
           <Graph key={uuidv4} graph={graphData} options={options} />
+          <div>
+            <p>Current Task: {current_task == "" ? "X" : current_task}</p>
+            <textarea
+              readonly
+              defaultValue={current_show}
+              className="popup"
+            ></textarea>
+          </div>
         </div>
+
         <button onClick={handleNext}>Next Clock</button>
         <p className="description" id="results">
           Results
