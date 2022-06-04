@@ -59,18 +59,22 @@ export class RBTree {
   __insert_fix(node) {
     let parent = null;
     let grand = null;
-    while (node != this.root && node.color == RED && node.parent.color == RED) {
+    while (
+      node !== this.root &&
+      node.color === RED &&
+      node.parent.color === RED
+    ) {
       parent = node.parent;
       grand = node.parent.parent;
-      if (parent == grand.left) {
+      if (parent === grand.left) {
         let uncle = grand.right;
-        if (uncle != null && uncle.color == RED) {
+        if (uncle !== null && uncle.color === RED) {
           grand.color = RED;
           parent.color = BLACK;
           uncle.color = BLACK;
           node = grand;
         } else {
-          if (node == parent.right) {
+          if (node === parent.right) {
             this.rotate_left(parent);
             node = parent;
             parent = node.parent;
@@ -85,13 +89,13 @@ export class RBTree {
         }
       } else {
         let uncle = grand.left;
-        if (uncle != null && uncle.color == RED) {
+        if (uncle !== null && uncle.color === RED) {
           grand.color = RED;
           parent.color = BLACK;
           uncle.color = BLACK;
           node = grand;
         } else {
-          if (node == parent.left) {
+          if (node === parent.left) {
             this.rotate_right(parent);
             node = parent;
             parent = node.parent;
@@ -111,10 +115,10 @@ export class RBTree {
   rotate_left(node) {
     let right_p = node.right;
     node.right = right_p.left;
-    if (node.right != null) node.right.parent = node;
+    if (node.right !== null) node.right.parent = node;
     right_p.parent = node.parent;
-    if (node.parent == null) this.root = right_p;
-    else if (node == node.parent.left) node.parent.left = right_p;
+    if (node.parent === null) this.root = right_p;
+    else if (node === node.parent.left) node.parent.left = right_p;
     else node.parent.right = right_p;
 
     right_p.left = node;
@@ -123,12 +127,12 @@ export class RBTree {
   rotate_right(node) {
     let left_p = node.left;
     node.left = left_p.right;
-    if (node.left != null) {
+    if (node.left !== null) {
       node.left.parent = node;
     }
     left_p.parent = node.parent;
-    if (node.parent == null) this.root = left_p;
-    else if (node == node.parent.left) node.parent.left = left_p;
+    if (node.parent === null) this.root = left_p;
+    else if (node === node.parent.left) node.parent.left = left_p;
     else node.parent.right = left_p;
 
     left_p.right = node;
@@ -137,7 +141,7 @@ export class RBTree {
 
   remove() {
     const delete_node = this.get_min(this.root);
-    if (delete_node == null) return;
+    if (delete_node === null) return;
 
     var x;
     var y = delete_node;
@@ -153,7 +157,7 @@ export class RBTree {
       prev_color = y.color;
       x = y.right;
 
-      if (y.parent == delete_node) {
+      if (y.parent === delete_node) {
         if (x) x.parent = y;
       } else {
         this.transplant(y, y.right);
@@ -165,38 +169,39 @@ export class RBTree {
       y.left.parent = y;
       y.color = delete_node.color;
     }
-    if (prev_color == BLACK) {
+    if (prev_color === BLACK) {
       this.__remove_fix(x);
     }
   }
 
   transplant(a, b) {
-    if (a.parent == null) this.root = b;
-    else if (a == a.parent.left) a.parent.left = b;
+    if (a.parent === null) this.root = b;
+    else if (a === a.parent.left) a.parent.left = b;
     else a.parent.right = b;
     if (b) b.parent = a.parent;
   }
 
   __remove_fix(node) {
     if (!node) return;
-    while (node !== this.root && node.color == BLACK) {
-      if (node == node.parent.left) {
-        var w = node.parent.right;
-        if (w.color == RED) {
+    var w;
+    while (node !== this.root && node.color === BLACK) {
+      if (node === node.parent.left) {
+        w = node.parent.right;
+        if (w.color === RED) {
           w.color = BLACK;
           this.rotate_left(node.parent);
           w = node.parent.right;
         }
-        if (w.color == BLACK && w.right.color == BLACK) {
+        if (w.color === BLACK && w.right.color === BLACK) {
           w.color = RED;
           node = node.parent;
           continue;
-        } else if (w.right.color == BLACK) {
+        } else if (w.right.color === BLACK) {
           w.left.color = BLACK;
           w.color = RED;
           w = node.parent.right;
         }
-        if (w.right.color == RED) {
+        if (w.right.color === RED) {
           w.color = node.parent.color;
           node.parent.color = BLACK;
           w.right.color = BLACK;
@@ -204,23 +209,23 @@ export class RBTree {
           node = this.root;
         }
       } else {
-        var w = node.parent.left;
-        if (w.color == RED) {
+        w = node.parent.left;
+        if (w.color === RED) {
           w.color = BLACK;
           node.parent.color = RED;
           this.rotate_right(node.parent);
           w = node.parent.left;
         }
-        if (w.right.color == BLACK && w.left.color == BLACK) {
+        if (w.right.color === BLACK && w.left.color === BLACK) {
           w.color = RED;
           node = node.parent;
-        } else if (w.left.color == BLACK) {
+        } else if (w.left.color === BLACK) {
           w.right.color = BLACK;
           w.color = RED;
           this.rotate_left(w);
           w = node.parent.left;
         }
-        if (w.left.color == RED) {
+        if (w.left.color === RED) {
           w.color = node.parent.color;
           node.parent.color = BLACK;
           w.left.color = BLACK;
@@ -234,8 +239,8 @@ export class RBTree {
 
   search(key, value) {
     var node = this.root;
-    while (node != null) {
-      if (key == node.key) return node;
+    while (node !== null) {
+      if (key === node.key) return node;
       else if (value < node.value) node = node.left;
       else if (value > node.value) node = node.right;
       else return null;
@@ -244,17 +249,17 @@ export class RBTree {
 
   isNull(node) {
     return (
-      node == null ||
-      (node.key == null &&
-        node.value == null &&
-        node.color == BLACK &&
-        node.left == null &&
-        node.right == null)
+      node === null ||
+      (node.key === null &&
+        node.value === null &&
+        node.color === BLACK &&
+        node.left === null &&
+        node.right === null)
     );
   }
 
   get_min(node) {
-    if (node == null || node == undefined) return;
+    if (node === null || node === undefined) return;
     while (!this.isNull(node.left)) node = node.left;
     return node;
   }

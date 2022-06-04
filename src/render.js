@@ -1,21 +1,3 @@
-const nodes = [
-  { id: 1, label: "A", color: "black" },
-  { id: 2, label: "B", color: "red" },
-  { id: 3, label: "C", color: "red" },
-  { id: 4, label: "D", color: "black" },
-  { id: 5, label: "E", color: "black" },
-  { id: 6, label: "F", color: "black" },
-];
-
-const edges = [
-  { from: 1, to: 2 },
-  { from: 1, to: 3 },
-  { from: 2, to: 4 },
-  { from: 2, to: 5 },
-  { from: 3, to: 6 },
-  { from: 3, to: 7 },
-];
-
 export const options = {
   nodes: {
     borderWidth: 2,
@@ -59,14 +41,3 @@ export const options = {
   },
   physics: false,
 };
-
-// export function Tree() {
-//   const [nd, setNd] = useState([]);
-//   const [ed, setEd] = useState([]);
-
-//   return <Graph graph={{ nodes: nd, edges: ed }} options={options} />;
-
-//   function addNode() {
-//     setNd([{ id: 1, label: "A", color: "black" }]);
-//   }
-// }

@@ -1,11 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import "./styles/App.css";
 import { RBTree } from "./rbt";
 import { Sched } from "./sched";
 import { options } from "./render";
 import Graph from "react-graph-vis";
 import { v4 as uuidv4 } from "uuid";
-import cloneDeep from "lodash/cloneDeep";
 
 var clock = 0;
 var rbt = new RBTree();
@@ -177,7 +176,7 @@ function App() {
 
       update_flag = true;
     }
-    if (current_task == "") sched_flag = true;
+    if (current_task === "") sched_flag = true;
     if (update_flag) {
       update_slice_all(); //update schedule enitities that added to runqueue
     }
@@ -186,7 +185,7 @@ function App() {
     if (clock > expected_runtime) finish_flag = true;
     if (finish_flag) write_finish_buffer();
     else write_buffer();
-    if (current_show == "") {
+    if (current_show === "") {
       current_show = `No scheduling in this clock\n`;
     }
     generateGraph();
@@ -338,7 +337,7 @@ function App() {
     current_show += "Schedule triggered\n\n";
     var se = tasks.get(min.key); //get schedule entity that has smallest vruntime
 
-    if (se.sum_exec_runtime == 0) update_slice_init(min.key);
+    if (se.sum_exec_runtime === 0) update_slice_init(min.key);
     else update_slice(min.key);
 
     results += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
@@ -428,20 +427,20 @@ function App() {
         <div>
           <p>Rules: </p>
           <p>
-            1. First line defines{" "}
-            <a className="enlarge-text">the total number of tasks</a>,
-            <a className="enlarge-text"> total runtime</a>.
+            1. First line defines
+            <text className="enlarge-text"> the total number of tasks</text>,
+            <text className="enlarge-text"> total runtime</text>.
           </p>
           <p>
-            2. Then each line defines the tasks in the order of:{" "}
-            <a className="enlarge-text">task name</a>,{" "}
-            <a className="enlarge-text">arrival time</a>,{" "}
-            <a className="enlarge-text">burst time</a>,{" "}
-            <a className="enlarge-text">nice value</a>.
+            2. Then each line defines the tasks in the order of:
+            <text className="enlarge-text"> task name</text>,
+            <text className="enlarge-text"> arrival time</text>,
+            <text className="enlarge-text"> burst time</text>,
+            <text className="enlarge-text"> nice value</text>.
           </p>
           <p>
-            3. The red black tree below would describe the status at{" "}
-            <a className="enlarge-text">the end</a> of each clock.
+            3. The red black tree below would describe the status at
+            <text className="enlarge-text"> the end</text> of each clock.
           </p>
         </div>
         <textarea
@@ -462,7 +461,7 @@ function App() {
 
           <Graph key={uuidv4} graph={graphData} options={options} />
           <div>
-            <p>Current Task: {current_task == "" ? "X" : current_task}</p>
+            <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea
               readonly
               defaultValue={current_show}
