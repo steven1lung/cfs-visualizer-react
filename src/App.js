@@ -21,7 +21,6 @@ var results = "";
 var task_seq = "";
 var startSimulate = false;
 var expected_runtime = 0;
-var null_node_id = -1;
 //scheduler variables
 var current_task = "";
 var current_show = "";
@@ -47,64 +46,69 @@ function App() {
 
   const generateGraph = (e) => {
     var newGraph = { nodes: [], edges: [] };
-    // dfs(rbt.root);
-    console.log(newGraph);
+    var nid = 1;
+
+    preorder(rbt._root);
+
     newGraph.edges.reverse();
     setGraphData(newGraph);
 
-    function dfs(node) {
-      if (!node) return;
+    function preorder(node) {
+      if (node == null) {
+        return;
+      }
+      let lid = nid * 2;
+      let rid = nid * 2 + 1;
 
-      // console.log(node.key, " ", node.value);
       const newNode = {
-        id: node.id,
-        label: node.key,
-        color: node.color ? "red" : "black",
+        id: nid,
+        label: node.data.key,
+        color: node.red ? "red" : "black",
       };
       newGraph.nodes.push(newNode);
       if (!node.left) {
         const leftNode = {
-          id: null_node_id,
+          id: lid,
           label: "n",
           color: "black",
         };
         const leftEdge = {
-          from: node.id,
-          to: null_node_id--,
+          from: nid,
+          to: lid,
         };
         newGraph.nodes.push(leftNode);
         newGraph.edges.push(leftEdge);
       } else {
         const leftEdge = {
-          from: node.id,
-          to: node.left.id,
+          from: nid,
+          to: lid,
         };
         newGraph.edges.push(leftEdge);
       }
 
       if (!node.right) {
         const rightNode = {
-          id: null_node_id,
+          id: rid,
           label: "n",
           color: "black",
         };
         const rightEdge = {
-          from: node.id,
-          to: null_node_id--,
+          from: nid,
+          to: rid,
         };
         newGraph.nodes.push(rightNode);
         newGraph.edges.push(rightEdge);
       } else {
         const rightEdge = {
-          from: node.id,
-          to: node.right.id,
+          from: nid,
+          to: rid,
         };
         newGraph.edges.push(rightEdge);
       }
-
-      // console.log(newNode);
-      dfs(node.left);
-      dfs(node.right);
+      nid = lid;
+      preorder(node.left);
+      nid = rid;
+      preorder(node.right);
     }
   };
 
@@ -172,7 +176,10 @@ function App() {
     if (cur) {
       for (var i of cur) {
         console.log(i, "arrives", tasks.get(i).vruntime);
-        rbt.insert({ key: i, value: tasks.get(i).vruntime + avoid_same_value });
+        rbt.insert({
+          key: i,
+          value: tasks.get(i).vruntime + avoid_same_value,
+        });
         current_show += `${i} arrives, insert ${i} to rbt\n\n`;
         avoid_same_value *= 2;
       }
@@ -194,7 +201,7 @@ function App() {
     if (current_show === "") {
       current_show = `No scheduling in this clock\n`;
     }
-    // generateGraph();
+    generateGraph();
     console.log(rbt);
   };
 
