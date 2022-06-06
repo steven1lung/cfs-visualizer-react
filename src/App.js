@@ -43,22 +43,14 @@ function App() {
 
   const generateGraph = (e) => {
     var newGraph = { nodes: [], edges: [] };
-
     dfs(rbt.root);
-
-    for (var i = 0; i < newGraph.nodes.length; ++i) {
-      let tmp_id = newGraph.nodes[i].id;
-      newGraph.nodes[i].id = i;
-      for (var tmp_ed of newGraph.edges) {
-        if (tmp_ed.from === tmp_id) tmp_ed.from = i;
-        if (tmp_ed.to === tmp_id) tmp_ed.to = i;
-      }
-    }
-    // newGraph.edges.reverse();
+    console.log(newGraph);
+    newGraph.edges.reverse();
     setGraphData(newGraph);
 
     function dfs(node) {
       if (!node) return;
+
       // console.log(node.key, " ", node.value);
       const newNode = {
         id: node.id,
@@ -436,19 +428,19 @@ function App() {
           <p>Rules: </p>
           <p>
             1. First line defines
-            <span className="enlarge-text"> the total number of tasks</span>,
-            <span className="enlarge-text"> total runtime</span>.
+            <text className="enlarge-text"> the total number of tasks</text>,
+            <text className="enlarge-text"> total runtime</text>.
           </p>
           <p>
             2. Then each line defines the tasks in the order of:
-            <span className="enlarge-text"> task name</span>,
-            <span className="enlarge-text"> arrival time</span>,
-            <span className="enlarge-text"> burst time</span>,
-            <span className="enlarge-text"> nice value</span>.
+            <text className="enlarge-text"> task name</text>,
+            <text className="enlarge-text"> arrival time</text>,
+            <text className="enlarge-text"> burst time</text>,
+            <text className="enlarge-text"> nice value</text>.
           </p>
           <p>
             3. The red black tree below would describe the status at
-            <span className="enlarge-text"> the end</span> of each clock.
+            <text className="enlarge-text"> the end</text> of each clock.
           </p>
         </div>
         <textarea
@@ -471,7 +463,7 @@ function App() {
           <div>
             <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea
-              readOnly
+              readonly
               defaultValue={current_show}
               className="popup"
             ></textarea>
