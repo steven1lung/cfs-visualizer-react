@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./styles/App.css";
 
 import { Sched } from "./sched";
@@ -34,6 +34,12 @@ const sched_prio_to_weight = [
   423, 335, 272, 215, 172, 137, 110, 87, 70, 56, 45, 36, 29, 23, 18, 15,
 ];
 
+const def_val = [
+  "3 10\nA 1 3 0\nB 2 4 -2\nC 2 3 2",
+  "4 12\nA 1 3 0\nB 2 4 -2\nC 2 3 2\nD 1 2 19",
+  "5 13\nA 1 3 0\nB 2 4 -2\nC 2 3 2\nD 1 2 19\nE 4 1 -15",
+];
+
 const graph = {
   nodes: [],
   edges: [],
@@ -43,6 +49,8 @@ function App() {
   const [showResult, setShowResult] = useState("");
   const [graphData, setGraphData] = useState(graph);
   const [clockShow, setClockShow] = useState(0);
+  const [defValShow, setDefValShow] = useState(def_val[0]);
+  const showRef = useRef();
 
   const generateGraph = (e) => {
     var newGraph = { nodes: [], edges: [] };
@@ -459,13 +467,25 @@ function App() {
             <span className="enlarge-text"> the end</span> of each clock.
           </p>
         </div>
+
         <textarea
           type="text"
+          ref={showRef}
           id="tasks"
           name="tasks"
           className="card"
-          defaultValue={"4 12\nA 1 3 0\nB 2 4 -2\nC 2 3 2\nD 1 2 19"}
+          value={defValShow}
+          onChange={(e) => {
+            setDefValShow(e.target.value);
+          }}
         ></textarea>
+
+        <div className="default_value">
+          <button onClick={() => setDefValShow(def_val[0])}>3 Tasks</button>
+          <button onClick={() => setDefValShow(def_val[1])}>4 Tasks</button>
+          <button onClick={() => setDefValShow(def_val[2])}>5 Tasks</button>
+        </div>
+
         <button onClick={handleSimulate}>Simulate</button>
 
         <p className="description" id="RB-Tree">

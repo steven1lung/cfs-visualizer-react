@@ -92,8 +92,11 @@
   flex-direction: row;
 }
 .popup{
-
   height: 100px
+}
+.default_value{
+  padding: 5px;
+  
 }
 
 .grid {
