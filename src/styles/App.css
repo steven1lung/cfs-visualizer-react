@@ -92,7 +92,7 @@
   flex-direction: row;
 }
 .popup{
-  width: 270px;
+
   height: 100px
 }
 
@@ -135,6 +135,9 @@
   line-height: 1.5;
 }
 
+.task{
+  width: 200px;
+}
 .clock{
   margin-left: 30px;
   font-size: 30px;

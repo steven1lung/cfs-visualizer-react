@@ -50,7 +50,6 @@ function App() {
 
     preorder(rbt._root);
 
-    newGraph.edges.reverse();
     setGraphData(newGraph);
 
     function preorder(node) {
@@ -465,7 +464,7 @@ function App() {
           id="tasks"
           name="tasks"
           className="card"
-          defaultValue={"3 10\nA 1 3 0\nB 2 4 -2\nC 2 3 2"}
+          defaultValue={"4 12\nA 1 3 0\nB 2 4 -2\nC 2 3 2\nD 1 2 19"}
         ></textarea>
         <button onClick={handleSimulate}>Simulate</button>
 
@@ -477,7 +476,7 @@ function App() {
           <p className="clock">{clock}</p>
 
           <Graph key={uuidv4} graph={graphData} options={options} />
-          <div>
+          <div className="task">
             <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea
               readOnly
