@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import "./styles/App.css";
-import { RBTree } from "./rbt";
+
 import { Sched } from "./sched";
 import { options } from "./render";
 import Graph from "react-graph-vis";
 import { v4 as uuidv4 } from "uuid";
 
 var clock = 0;
-var rbt = new RBTree();
+var RBTree = require("bintrees").RBTree;
+var rbt = new RBTree(function (a, b) {
+  return a.value - b.value;
+});
 var tasks = new Map();
 var num;
 var timequeue = new Map();
@@ -22,6 +25,7 @@ var null_node_id = -1;
 //scheduler variables
 var current_task = "";
 var current_show = "";
+var avoid_same_value = 0.0000001;
 const sched_latency = 6;
 const sched_min_granularity = 0.75;
 const sched_wakeup_granularity = 1;
@@ -43,7 +47,7 @@ function App() {
 
   const generateGraph = (e) => {
     var newGraph = { nodes: [], edges: [] };
-    dfs(rbt.root);
+    // dfs(rbt.root);
     console.log(newGraph);
     newGraph.edges.reverse();
     setGraphData(newGraph);
@@ -167,12 +171,14 @@ function App() {
     // console.log(tasks);
     if (cur) {
       for (var i of cur) {
-        rbt.insert(i, tasks.get(i).vruntime);
+        console.log(i, "arrives", tasks.get(i).vruntime);
+        rbt.insert({ key: i, value: tasks.get(i).vruntime + avoid_same_value });
         current_show += `${i} arrives, insert ${i} to rbt\n\n`;
+        avoid_same_value *= 2;
       }
       // treeRef.current.forceUpdate();
       // console.log("tasks: ", tasks);
-      console.log(rbt.root);
+      console.log(rbt);
 
       update_flag = true;
     }
@@ -188,7 +194,8 @@ function App() {
     if (current_show === "") {
       current_show = `No scheduling in this clock\n`;
     }
-    generateGraph();
+    // generateGraph();
+    console.log(rbt);
   };
 
   function write_finish_buffer() {
@@ -207,8 +214,8 @@ function App() {
 
   function write_buffer() {
     results += `current running task: ${current_task}\n\n\n`;
-    console.log("rbt: ");
-    console.log(rbt.root);
+    // console.log("rbt: ");
+    // console.log(rbt.root);
     console.log("tasks data: ");
     console.log(tasks);
     console.log("current task: ", current_task);
@@ -219,7 +226,9 @@ function App() {
   }
 
   function data_init() {
-    rbt = new RBTree();
+    rbt = new RBTree(function (a, b) {
+      return a.value - b.value;
+    });
     tasks = new Map();
     timequeue = new Map();
     sched_flag = false;
@@ -231,6 +240,7 @@ function App() {
     task_seq = "\n[ ";
     expected_runtime = 0;
     current_show = "";
+    setClockShow(0);
     setShowResult("");
   }
 
@@ -306,7 +316,7 @@ function App() {
         se.on_rq
       )
     );
-    rbt.insert(key, vruntime);
+    rbt.insert({ key: key, value: vruntime });
   }
 
   function update_exec(key) {
@@ -329,7 +339,7 @@ function App() {
   }
 
   function schedule() {
-    var min = rbt.get_min(rbt.root); //get smallest vruntime from rbt
+    var min = rbt.min(); //get smallest vruntime from rbt
     if (!min) {
       finish_flag = true;
       return;
@@ -345,7 +355,7 @@ function App() {
     console.log(min.key, " has the smallest vruntime: ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
-    rbt.remove(); //remove schedule entity from rbt
+    rbt.remove(min); //remove schedule entity from rbt
     current_show += `Remove ${min.key} from rbt and execute it\n`;
     current_task = min.key;
   }
@@ -428,19 +438,19 @@ function App() {
           <p>Rules: </p>
           <p>
             1. First line defines
-            <text className="enlarge-text"> the total number of tasks</text>,
-            <text className="enlarge-text"> total runtime</text>.
+            <span className="enlarge-text"> the total number of tasks</span>,
+            <span className="enlarge-text"> total runtime</span>.
           </p>
           <p>
             2. Then each line defines the tasks in the order of:
-            <text className="enlarge-text"> task name</text>,
-            <text className="enlarge-text"> arrival time</text>,
-            <text className="enlarge-text"> burst time</text>,
-            <text className="enlarge-text"> nice value</text>.
+            <span className="enlarge-text"> task name</span>,
+            <span className="enlarge-text"> arrival time</span>,
+            <span className="enlarge-text"> burst time</span>,
+            <span className="enlarge-text"> nice value</span>.
           </p>
           <p>
             3. The red black tree below would describe the status at
-            <text className="enlarge-text"> the end</text> of each clock.
+            <span className="enlarge-text"> the end</span> of each clock.
           </p>
         </div>
         <textarea
@@ -463,7 +473,7 @@ function App() {
           <div>
             <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea
-              readonly
+              readOnly
               defaultValue={current_show}
               className="popup"
             ></textarea>
