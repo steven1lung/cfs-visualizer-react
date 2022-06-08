@@ -92,7 +92,8 @@
   flex-direction: row;
 }
 .popup{
-  height: 100px
+  height: 150px;
+  
 }
 .default_value{
   padding: 5px;

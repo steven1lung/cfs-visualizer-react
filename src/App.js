@@ -56,6 +56,7 @@ function App() {
   const [nodeShow, setNodeShow] = useState("X");
   const [vrtShow, setVrtShow] = useState(0);
   const [timesliceShow, setTimesliceShow] = useState(0);
+  const [niceShow, setNiceShow] = useState("null");
 
   const events = {
     hoverNode: (node) => {
@@ -63,9 +64,14 @@ function App() {
       // console.log("asd");
       var key = Label2ID.get(node.node);
       var se = tasks.get(key);
-      if (se) {
-        setVrtShow(se.vruntime.toFixed(2));
-        setTimesliceShow(se.timeslice.toFixed(2));
+      if (key !== "n") {
+        setVrtShow(se.vruntime);
+        setTimesliceShow(se.timeslice);
+        setNiceShow(JSON.stringify(se.nice));
+      } else {
+        setVrtShow(0);
+        setTimesliceShow(0);
+        setNiceShow("null");
       }
       setNodeShow(key);
     },
@@ -292,6 +298,11 @@ function App() {
   function update_slice(key) {
     var timeslice = calc_slice(key);
     var se = tasks.get(key);
+    console.log(se, timeslice);
+    if (se.timeslice !== timeslice) {
+      results += `Update ${key}'s timeslice from ${se.timeslice} to ${timeslice}\n`;
+      current_show += `Update ${key}'s timeslice from ${se.timeslice} to ${timeslice}\n\n`;
+    }
     tasks.set(
       key,
       new Sched(
@@ -319,15 +330,15 @@ function App() {
       //finish execute
       results += `${current_task} has finished execution\n`;
       current_show += `${current_task} has finished execution\n`;
-      console.log(current_task, " has finished execution");
+      // console.log(current_task, " has finished execution");
       tasks.delete(current_task);
       current_task = "";
       sched_flag = true;
     } else if (clock - se.exec_start >= se.timeslice) {
       //ran out of timeslice
-      results += `${current_task} has finished its timeslice of ${se.timeslice}\n`;
-      current_show += `${current_task} has finished execution\n`;
-      console.log(current_task, " has finished timeslice");
+      results += `${current_task} has finished its timeslice of ${se.timeslice}\n\n`;
+      current_show += `${current_task} has finished its timeslice of ${se.timeslice}\n\n`;
+      // console.log(current_task, " has finished its timeslice of ${se.timeslice}\n");
       update_vruntime(current_task);
       current_task = "";
       sched_flag = true;
@@ -336,9 +347,9 @@ function App() {
 
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
-    results += `Update ${key}'s vruntime to: ${vruntime}\n`;
-    current_show += `Update ${key}'s vruntime to: ${vruntime} \nInsert ${key} to rbt\n`;
-    console.log("Update ", key, "'s vruntime to : ", vruntime);
+    results += `Update ${key}'s vruntime to: ${vruntime}\nInsert ${key} to rbt\n`;
+    current_show += `Update ${key}'s vruntime to: ${vruntime} \nInsert ${key} to rbt\n\n`;
+    // console.log("Update ", key, "'s vruntime to : ", vruntime);
     var se = tasks.get(key);
     tasks.set(
       key,
@@ -381,19 +392,20 @@ function App() {
       finish_flag = true;
       return;
     }
-    current_show += "Schedule triggered\n\n";
+    // current_show += "Schedule triggered\n\n";
     var se = tasks.get(min.key); //get schedule entity that has smallest vruntime
 
     if (se.sum_exec_runtime === 0) update_slice_init(min.key);
     else update_slice(min.key);
 
     results += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
-    current_show += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
-    console.log(min.key, " has the smallest vruntime: ", se.vruntime);
+    current_show += `${min.key} has the smallest vruntime: ${se.vruntime}\n\n`;
+    // console.log(min.key, " has the smallest vruntime: ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
     rbt.remove(min); //remove schedule entity from rbt
-    current_show += `Remove ${min.key} from rbt and execute it\n`;
+    current_show += `Remove ${min.key} from rbt and execute it for timeslice: ${se.timeslice}\n\n`;
+    results += `Remove ${min.key} from rbt and execute it for timeslice: ${se.timeslice}\n`;
     current_task = min.key;
   }
 
@@ -426,7 +438,7 @@ function App() {
     var weight = get_nice(se.nice);
     var delta_exec = clock - se.exec_start;
     vruntime = se.vruntime + get_nice(0) * (delta_exec / weight);
-    return vruntime;
+    return vruntime.toFixed(3);
   }
 
   function calc_slice(key) {
@@ -440,7 +452,7 @@ function App() {
       total_weight += get_nice(i.nice);
     }
     timeslice = target_latency * (weight / total_weight);
-    return timeslice;
+    return timeslice.toFixed(3);
   }
 
   function print_init() {
@@ -489,6 +501,10 @@ function App() {
             3. The red black tree below would describe the status at
             <span className="enlarge-text"> the end</span> of each clock.
           </p>
+          <p>
+            4. You can <span className="enlarge-text">hover</span> the mouse on
+            the node to see data about it.
+          </p>
         </div>
 
         <textarea
@@ -526,6 +542,9 @@ function App() {
             </p>
             <p>
               timeslice: <span>{timesliceShow}</span>
+            </p>
+            <p>
+              nice: <span>{niceShow}</span>
             </p>
           </div>
 
