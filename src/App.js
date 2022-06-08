@@ -300,8 +300,12 @@ function App() {
     var se = tasks.get(key);
     console.log(se, timeslice);
     if (se.timeslice !== timeslice) {
-      results += `Update ${key}'s timeslice from ${se.timeslice} to ${timeslice}\n`;
-      current_show += `Update ${key}'s timeslice from ${se.timeslice} to ${timeslice}\n\n`;
+      results += `Update ${key}'s timeslice from ${se.timeslice.toFixed(
+        3
+      )} to ${timeslice.toFixed(3)}\n`;
+      current_show += `Update ${key}'s timeslice from ${se.timeslice.toFixed(
+        3
+      )} to ${timeslice.toFixed(3)}\n\n`;
     }
     tasks.set(
       key,
@@ -336,8 +340,12 @@ function App() {
       sched_flag = true;
     } else if (clock - se.exec_start >= se.timeslice) {
       //ran out of timeslice
-      results += `${current_task} has finished its timeslice of ${se.timeslice}\n\n`;
-      current_show += `${current_task} has finished its timeslice of ${se.timeslice}\n\n`;
+      results += `${current_task} has finished its timeslice of ${se.timeslice.toFixed(
+        3
+      )}\n\n`;
+      current_show += `${current_task} has finished its timeslice of ${se.timeslice.toFixed(
+        3
+      )}\n\n`;
       // console.log(current_task, " has finished its timeslice of ${se.timeslice}\n");
       update_vruntime(current_task);
       current_task = "";
@@ -347,8 +355,12 @@ function App() {
 
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
-    results += `Update ${key}'s vruntime to: ${vruntime}\nInsert ${key} to rbt\n`;
-    current_show += `Update ${key}'s vruntime to: ${vruntime} \nInsert ${key} to rbt\n\n`;
+    results += `Update ${key}'s vruntime to: ${vruntime.toFixed(
+      3
+    )}\nInsert ${key} to rbt\n`;
+    current_show += `Update ${key}'s vruntime to: ${vruntime.toFixed(
+      3
+    )} \nInsert ${key} to rbt\n\n`;
     // console.log("Update ", key, "'s vruntime to : ", vruntime);
     var se = tasks.get(key);
     tasks.set(
@@ -398,14 +410,22 @@ function App() {
     if (se.sum_exec_runtime === 0) update_slice_init(min.key);
     else update_slice(min.key);
 
-    results += `${min.key} has the smallest vruntime: ${se.vruntime}\n`;
-    current_show += `${min.key} has the smallest vruntime: ${se.vruntime}\n\n`;
+    results += `${min.key} has the smallest vruntime: ${se.vruntime.toFixed(
+      3
+    )}\n`;
+    current_show += `${
+      min.key
+    } has the smallest vruntime: ${se.vruntime.toFixed(3)}\n\n`;
     // console.log(min.key, " has the smallest vruntime: ", se.vruntime);
 
     se = tasks.get(min.key); //get updated schedule entity
     rbt.remove(min); //remove schedule entity from rbt
-    current_show += `Remove ${min.key} from rbt and execute it for timeslice: ${se.timeslice}\n\n`;
-    results += `Remove ${min.key} from rbt and execute it for timeslice: ${se.timeslice}\n`;
+    current_show += `Remove ${
+      min.key
+    } from rbt and execute it for timeslice: ${se.timeslice.toFixed(3)}\n\n`;
+    results += `Remove ${
+      min.key
+    } from rbt and execute it for timeslice: ${se.timeslice.toFixed(3)}\n`;
     current_task = min.key;
   }
 
@@ -438,7 +458,7 @@ function App() {
     var weight = get_nice(se.nice);
     var delta_exec = clock - se.exec_start;
     vruntime = se.vruntime + get_nice(0) * (delta_exec / weight);
-    return vruntime.toFixed(3);
+    return vruntime;
   }
 
   function calc_slice(key) {
@@ -452,7 +472,7 @@ function App() {
       total_weight += get_nice(i.nice);
     }
     timeslice = target_latency * (weight / total_weight);
-    return timeslice.toFixed(3);
+    return timeslice;
   }
 
   function print_init() {
@@ -538,10 +558,10 @@ function App() {
             </p>
 
             <p>
-              vruntime: <span>{vrtShow}</span>
+              vruntime: <span>{vrtShow.toFixed(3)}</span>
             </p>
             <p>
-              timeslice: <span>{timesliceShow}</span>
+              timeslice: <span>{timesliceShow.toFixed(3)}</span>
             </p>
             <p>
               nice: <span>{niceShow}</span>
