@@ -87,7 +87,7 @@
   /* padding: 1.5rem; */
   border: 1px solid #eaeaea;
   border-radius: 10px;
-  width: 700px;
+  width: 90%;
   height: 70vh;
   flex-direction: row;
 }
@@ -142,9 +142,13 @@
   width: 200px;
 }
 .clock{
-  margin-left: 30px;
   font-size: 30px;
   font-weight: bolder;
+}
+
+.clock-container{
+  width: 20%; 
+  margin-left: 30px;
 }
 
 .logo {

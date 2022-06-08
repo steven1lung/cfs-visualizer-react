@@ -25,6 +25,8 @@ var expected_runtime = 0;
 var current_task = "";
 var current_show = "";
 var avoid_same_value = 0.0000001;
+var Label2ID = new Map();
+
 const sched_latency = 6;
 const sched_min_granularity = 0.75;
 const sched_wakeup_granularity = 1;
@@ -51,9 +53,27 @@ function App() {
   const [clockShow, setClockShow] = useState(0);
   const [defValShow, setDefValShow] = useState(def_val[0]);
   const showRef = useRef();
+  const [nodeShow, setNodeShow] = useState("X");
+  const [vrtShow, setVrtShow] = useState(0);
+  const [timesliceShow, setTimesliceShow] = useState(0);
+
+  const events = {
+    hoverNode: (node) => {
+      // console.log(node.node);
+      // console.log("asd");
+      var key = Label2ID.get(node.node);
+      var se = tasks.get(key);
+      if (se) {
+        setVrtShow(se.vruntime.toFixed(2));
+        setTimesliceShow(se.timeslice.toFixed(2));
+      }
+      setNodeShow(key);
+    },
+  };
 
   const generateGraph = (e) => {
     var newGraph = { nodes: [], edges: [] };
+    Label2ID.clear();
     var nid = 1;
 
     preorder(rbt._root);
@@ -72,6 +92,7 @@ function App() {
         label: node.data.key,
         color: node.red ? "red" : "black",
       };
+      Label2ID.set(nid, node.data.key);
       newGraph.nodes.push(newNode);
       if (!node.left) {
         const leftNode = {
@@ -83,6 +104,7 @@ function App() {
           from: nid,
           to: lid,
         };
+        Label2ID.set(lid, "n");
         newGraph.nodes.push(leftNode);
         newGraph.edges.push(leftEdge);
       } else {
@@ -103,6 +125,7 @@ function App() {
           from: nid,
           to: rid,
         };
+        Label2ID.set(rid, "n");
         newGraph.nodes.push(rightNode);
         newGraph.edges.push(rightEdge);
       } else {
@@ -209,7 +232,7 @@ function App() {
       current_show = `No scheduling in this clock\n`;
     }
     generateGraph();
-    console.log(rbt);
+    // console.log(rbt);
   };
 
   function write_finish_buffer() {
@@ -491,11 +514,27 @@ function App() {
         <p className="description" id="RB-Tree">
           RB-Tree
         </p>
-        <div></div>
         <div className="rbt">
-          <p className="clock">{clock}</p>
+          <div className="clock-container">
+            <p className="clock">{clock}</p>
+            <p className="enlarge-text">
+              Hovering Node : <span>{nodeShow}</span>
+            </p>
 
-          <Graph key={uuidv4} graph={graphData} options={options} />
+            <p>
+              vruntime: <span>{vrtShow}</span>
+            </p>
+            <p>
+              timeslice: <span>{timesliceShow}</span>
+            </p>
+          </div>
+
+          <Graph
+            key={uuidv4}
+            graph={graphData}
+            options={options}
+            events={events}
+          />
           <div className="task">
             <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea

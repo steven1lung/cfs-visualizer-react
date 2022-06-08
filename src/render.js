@@ -13,6 +13,7 @@ export const options = {
     color: "#000000",
     smooth: true,
     width: 1,
+    hoverWidth: 0,
   },
   height: "100%",
   width: "100%",
@@ -28,7 +29,7 @@ export const options = {
     dragView: false,
     hideEdgesOnDrag: false,
     hideNodesOnDrag: false,
-    hover: false,
+    hover: true,
     hoverConnectedEdges: false,
     keyboard: {
       enabled: false,
