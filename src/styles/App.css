@@ -11,6 +11,9 @@
   justify-content: center;
   align-items: center;
 }
+.btn{
+  margin-right: 10px;
+}
 
 .footer {
   display: flex;

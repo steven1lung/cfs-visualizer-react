@@ -4,6 +4,7 @@ import "./styles/App.css";
 import { Sched } from "./sched";
 import { options } from "./render";
 import Graph from "react-graph-vis";
+import { cloneDeep } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 
 var clock = 0;
@@ -11,9 +12,9 @@ var RBTree = require("bintrees").RBTree;
 var rbt = new RBTree(function (a, b) {
   return a.value - b.value;
 });
-var tasks = new Map();
-var num;
-var timequeue = new Map();
+var tasks = new Map(); //hashmap for task name to a task structure
+var num; //total number of tasks
+var timequeue = new Map(); //timequeue for adding tasks to runqueue when arrival time hits
 var sched_flag = false;
 var update_flag = false;
 var finish_flag = false;
@@ -21,6 +22,14 @@ var results = "";
 var task_seq = "";
 var startSimulate = false;
 var expected_runtime = 0;
+
+var prev_rbt = [];
+var prev_graph = [];
+var prev_tasks = [];
+var prev_show = [];
+var prev_flags = [];
+var prev_curtask = [];
+var prev_count = 0;
 //scheduler variables
 var current_task = "";
 var current_show = "";
@@ -83,7 +92,6 @@ function App() {
     var nid = 1;
 
     preorder(rbt._root);
-
     setGraphData(newGraph);
 
     function preorder(node) {
@@ -182,6 +190,24 @@ function App() {
     }, 100);
   };
 
+  const handlePrev = () => {
+    if (prev_graph.length < 1) return;
+    prev_count++;
+    console.log("prev");
+    clock--;
+    tasks = prev_tasks.pop();
+    current_show = prev_show.pop();
+
+    rbt = prev_rbt.pop();
+
+    const tmp_flag = prev_flags.pop();
+    sched_flag = tmp_flag.sched;
+    finish_flag = tmp_flag.finish;
+    update_flag = tmp_flag.update;
+    current_task = prev_curtask.pop();
+    setGraphData(prev_graph.pop());
+  };
+
   const handleNext = () => {
     if (!startSimulate) {
       alert("Please define the tasks first");
@@ -194,10 +220,24 @@ function App() {
       return;
     }
     if (finish_flag) return;
+
+    //update previous data
+    prev_tasks.push(cloneDeep(tasks));
+    prev_show.push(current_show);
+    console.log("save");
+    prev_rbt.push(cloneDeep(rbt));
+    prev_flags.push({
+      sched: sched_flag,
+      update: update_flag,
+      finish: finish_flag,
+    });
+    prev_graph.push(cloneDeep(graphData));
+    prev_curtask.push(current_task);
+
     current_show = "";
     clock++;
     setClockShow(clockShow + 1);
-    results += `CPU Time: ${clock}\n`;
+    if (prev_count === 0) results += `CPU Time: ${clock}\n`;
     console.log("CPU Time : ", clock);
     if (clock === 0) {
       print_init();
@@ -238,14 +278,15 @@ function App() {
       current_show = `No scheduling in this clock\n`;
     }
     generateGraph();
+    if (prev_count > 0) prev_count--;
     // console.log(rbt);
   };
 
   function write_finish_buffer() {
-    results += `Finish scheduling simulate\n`;
+    if (prev_count === 0) results += `Finish scheduling simulate\n`;
     console.log("Finish scheduling simulate");
-    task_seq += "]\n";
-    results += task_seq;
+    if (prev_count === 0) task_seq += "]\n";
+    if (prev_count === 0) results += task_seq;
     setShowResult(results);
     setTimeout(() => {
       window.scrollTo({
@@ -256,14 +297,15 @@ function App() {
   }
 
   function write_buffer() {
-    results += `current running task: ${current_task}\n\n\n`;
+    if (prev_count === 0)
+      results += `current running task: ${current_task}\n\n\n`;
     // console.log("rbt: ");
     // console.log(rbt.root);
     console.log("tasks data: ");
     console.log(tasks);
     console.log("current task: ", current_task);
     console.log("\n\n");
-    task_seq += `${current_task} `;
+    if (prev_count === 0) task_seq += `${current_task} `;
     sched_flag = false;
     update_flag = false;
   }
@@ -282,6 +324,13 @@ function App() {
     results = "";
     task_seq = "\n[ ";
     expected_runtime = 0;
+    prev_rbt = [];
+    prev_graph = [];
+    prev_tasks = [];
+    prev_show = [];
+    prev_flags = [];
+    prev_curtask = [];
+    prev_count = 0;
     current_show = "";
     setClockShow(0);
     setShowResult("");
@@ -300,9 +349,10 @@ function App() {
     var se = tasks.get(key);
     console.log(se, timeslice);
     if (se.timeslice !== timeslice) {
-      results += `Update ${key}'s timeslice from ${se.timeslice.toFixed(
-        3
-      )} to ${timeslice.toFixed(3)}\n`;
+      if (prev_count === 0)
+        results += `Update ${key}'s timeslice from ${se.timeslice.toFixed(
+          3
+        )} to ${timeslice.toFixed(3)}\n`;
       current_show += `Update ${key}'s timeslice from ${se.timeslice.toFixed(
         3
       )} to ${timeslice.toFixed(3)}\n\n`;
@@ -332,7 +382,8 @@ function App() {
 
     if (se.sum_exec_runtime >= se.burst_time) {
       //finish execute
-      results += `${current_task} has finished execution\n`;
+      if (prev_count === 0)
+        results += `${current_task} has finished execution\n`;
       current_show += `${current_task} has finished execution\n`;
       // console.log(current_task, " has finished execution");
       tasks.delete(current_task);
@@ -340,9 +391,10 @@ function App() {
       sched_flag = true;
     } else if (clock - se.exec_start >= se.timeslice) {
       //ran out of timeslice
-      results += `${current_task} has finished its timeslice of ${se.timeslice.toFixed(
-        3
-      )}\n\n`;
+      if (prev_count === 0)
+        results += `${current_task} has finished its timeslice of ${se.timeslice.toFixed(
+          3
+        )}\n\n`;
       current_show += `${current_task} has finished its timeslice of ${se.timeslice.toFixed(
         3
       )}\n\n`;
@@ -355,9 +407,10 @@ function App() {
 
   function update_vruntime(key) {
     var vruntime = calc_vruntime(key);
-    results += `Update ${key}'s vruntime to: ${vruntime.toFixed(
-      3
-    )}\nInsert ${key} to rbt\n`;
+    if (prev_count === 0)
+      results += `Update ${key}'s vruntime to: ${vruntime.toFixed(
+        3
+      )}\nInsert ${key} to rbt\n`;
     current_show += `Update ${key}'s vruntime to: ${vruntime.toFixed(
       3
     )} \nInsert ${key} to rbt\n\n`;
@@ -410,9 +463,10 @@ function App() {
     if (se.sum_exec_runtime === 0) update_slice_init(min.key);
     else update_slice(min.key);
 
-    results += `${min.key} has the smallest vruntime: ${se.vruntime.toFixed(
-      3
-    )}\n`;
+    if (prev_count === 0)
+      results += `${min.key} has the smallest vruntime: ${se.vruntime.toFixed(
+        3
+      )}\n`;
     current_show += `${
       min.key
     } has the smallest vruntime: ${se.vruntime.toFixed(3)}\n\n`;
@@ -423,9 +477,10 @@ function App() {
     current_show += `Remove ${
       min.key
     } from rbt and execute it for timeslice: ${se.timeslice.toFixed(3)}\n\n`;
-    results += `Remove ${
-      min.key
-    } from rbt and execute it for timeslice: ${se.timeslice.toFixed(3)}\n`;
+    if (prev_count === 0)
+      results += `Remove ${
+        min.key
+      } from rbt and execute it for timeslice: ${se.timeslice.toFixed(3)}\n`;
     current_task = min.key;
   }
 
@@ -483,11 +538,13 @@ function App() {
     console.log("sched_wakeup_granularity: ", sched_wakeup_granularity);
     console.log("\n\n");
 
-    results += `Scheduler Init\n`;
-    results += `Constants are listed below: \n`;
-    results += `sched_latency: ${sched_latency}\n`;
-    results += `sched_min_granularity: ${sched_min_granularity}\n`;
-    results += `sched_wakeup_granularity: ${sched_wakeup_granularity}\n\n\n`;
+    if (prev_count === 0) {
+      results += `Scheduler Init\n`;
+      results += `Constants are listed below: \n`;
+      results += `sched_latency: ${sched_latency}\n`;
+      results += `sched_min_granularity: ${sched_min_granularity}\n`;
+      results += `sched_wakeup_granularity: ${sched_wakeup_granularity}\n\n\n`;
+    }
   }
 
   return (
@@ -583,8 +640,15 @@ function App() {
             ></textarea>
           </div>
         </div>
+        <div>
+          <button className="btn" onClick={handlePrev}>
+            Prev Clock
+          </button>
+          <button className="btn" onClick={handleNext}>
+            Next Clock
+          </button>
+        </div>
 
-        <button onClick={handleNext}>Next Clock</button>
         <p className="description" id="results">
           Results
         </p>
