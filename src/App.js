@@ -598,7 +598,9 @@ function App() {
 
         <div className="default_value">
           <button onClick={() => setDefValShow(def_val[0])}>3 Tasks</button>
-          <button onClick={() => setDefValShow(def_val[1])}>4 Tasks</button>
+          <button className="btn" onClick={() => setDefValShow(def_val[1])}>
+            4 Tasks
+          </button>
           <button onClick={() => setDefValShow(def_val[2])}>5 Tasks</button>
         </div>
 
