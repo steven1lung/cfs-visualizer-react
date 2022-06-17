@@ -38,7 +38,6 @@ var Label2ID = new Map();
 
 const sched_latency = 6;
 const sched_min_granularity = 0.75;
-const sched_wakeup_granularity = 1;
 const sched_prio_to_weight = [
   88761, 71755, 56483, 46273, 36291, 29154, 23254, 18705, 14949, 11916, 9548,
   7620, 6100, 4904, 3906, 3121, 2501, 1991, 1586, 1277, 1024, 820, 655, 526,
@@ -535,7 +534,6 @@ function App() {
     console.log("Constants are listed below: \n");
     console.log("sched_latency: ", sched_latency);
     console.log("sched_min_granularity: ", sched_min_granularity);
-    console.log("sched_wakeup_granularity: ", sched_wakeup_granularity);
     console.log("\n\n");
 
     if (prev_count === 0) {
@@ -543,7 +541,6 @@ function App() {
       results += `Constants are listed below: \n`;
       results += `sched_latency: ${sched_latency}\n`;
       results += `sched_min_granularity: ${sched_min_granularity}\n`;
-      results += `sched_wakeup_granularity: ${sched_wakeup_granularity}\n\n\n`;
     }
   }
 
