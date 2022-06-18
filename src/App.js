@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import "./styles/App.css";
 
-import { Sched } from "./sched";
+import { Sched, sched_prio_to_weight } from "./sched";
 import { options } from "./render";
 import Graph from "react-graph-vis";
 import { cloneDeep } from "lodash";
@@ -38,11 +38,6 @@ var Label2ID = new Map();
 
 const sched_latency = 6;
 const sched_min_granularity = 0.75;
-const sched_prio_to_weight = [
-  88761, 71755, 56483, 46273, 36291, 29154, 23254, 18705, 14949, 11916, 9548,
-  7620, 6100, 4904, 3906, 3121, 2501, 1991, 1586, 1277, 1024, 820, 655, 526,
-  423, 335, 272, 215, 172, 137, 110, 87, 70, 56, 45, 36, 29, 23, 18, 15,
-];
 
 const def_val = [
   "3 10\nA 1 3 0\nB 2 4 -2\nC 2 3 2",
@@ -207,6 +202,14 @@ function App() {
     setGraphData(prev_graph.pop());
   };
 
+  /**
+   * Every clock cycle would perform the following operation in order:
+   *  1. Push current status to previous stack
+   *  2. sched_tick() : update current task data
+   *  3. Add tasks that arrive at current time, and update all tasks timeslice
+   *  4. If no tasks are running, schedule a task to run
+   *  5. Generate rbt visualization
+   */
   const handleNext = () => {
     if (!startSimulate) {
       alert("Please define the tasks first");
