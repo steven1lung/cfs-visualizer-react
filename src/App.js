@@ -84,7 +84,7 @@ function App() {
     var newGraph = { nodes: [], edges: [] };
     Label2ID.clear();
     var nid = 1;
-
+    console.log(rbt);
     preorder(rbt._root);
     setGraphData(newGraph);
 
@@ -106,7 +106,8 @@ function App() {
         const leftNode = {
           id: lid,
           label: "n",
-          color: "black",
+          color: "gray",
+          font: "15px arial white",
         };
         const leftEdge = {
           from: nid,
@@ -127,7 +128,8 @@ function App() {
         const rightNode = {
           id: rid,
           label: "n",
-          color: "black",
+          color: "gray",
+          font: "15px arial white",
         };
         const rightEdge = {
           from: nid,
