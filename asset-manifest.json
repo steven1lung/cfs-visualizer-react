@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/cfs-visualizer-react/static/css/main.2ae8d6f2.css",
-    "main.js": "/cfs-visualizer-react/static/js/main.947d8963.js",
+    "main.js": "/cfs-visualizer-react/static/js/main.dc6bf44d.js",
     "index.html": "/cfs-visualizer-react/index.html",
     "main.2ae8d6f2.css.map": "/cfs-visualizer-react/static/css/main.2ae8d6f2.css.map",
-    "main.947d8963.js.map": "/cfs-visualizer-react/static/js/main.947d8963.js.map"
+    "main.dc6bf44d.js.map": "/cfs-visualizer-react/static/js/main.dc6bf44d.js.map"
   },
   "entrypoints": [
     "static/css/main.2ae8d6f2.css",
-    "static/js/main.947d8963.js"
+    "static/js/main.dc6bf44d.js"
   ]
 }
