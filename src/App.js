@@ -60,6 +60,7 @@ function App() {
   const [vrtShow, setVrtShow] = useState(0);
   const [timesliceShow, setTimesliceShow] = useState(0);
   const [niceShow, setNiceShow] = useState("null");
+  const [hoverShow, setHoverShow] = useState(false);
 
   const events = {
     hoverNode: (node) => {
@@ -68,6 +69,7 @@ function App() {
       var key = Label2ID.get(node.node);
       var se = tasks.get(key);
       if (key !== "n") {
+        setHoverShow(true);
         setVrtShow(se.vruntime);
         setTimesliceShow(se.timeslice);
         setNiceShow(JSON.stringify(se.nice));
@@ -77,6 +79,9 @@ function App() {
         setNiceShow("null");
       }
       setNodeShow(key);
+    },
+    blurNode: (node) => {
+      setHoverShow(false);
     },
   };
 
@@ -615,18 +620,24 @@ function App() {
           <div className="clock-container">
             <p className="clock">{clock}</p>
             <p className="enlarge-text">
-              Hovering Node : <span>{nodeShow}</span>
+              Current Task: {current_task === "" ? "X" : current_task}
             </p>
-
-            <p>
-              vruntime: <span>{vrtShow.toFixed(3)}</span>
-            </p>
-            <p>
-              timeslice: <span>{timesliceShow.toFixed(3)}</span>
-            </p>
-            <p>
-              nice: <span>{niceShow}</span>
-            </p>
+            {hoverShow && (
+              <div>
+                <p className="enlarge-text">
+                  Hovering Node : <span>{nodeShow}</span>
+                </p>
+                <p>
+                  vruntime: <span>{vrtShow.toFixed(3)}</span>
+                </p>
+                <p>
+                  timeslice: <span>{timesliceShow.toFixed(3)}</span>
+                </p>
+                <p>
+                  nice: <span>{niceShow}</span>
+                </p>
+              </div>
+            )}
           </div>
 
           <Graph
@@ -636,7 +647,6 @@ function App() {
             events={events}
           />
           <div className="task">
-            <p>Current Task: {current_task === "" ? "X" : current_task}</p>
             <textarea
               readOnly
               defaultValue={current_show}
