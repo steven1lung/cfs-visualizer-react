@@ -19,7 +19,7 @@ So the second line would define a task naming 'A', would arrive at clock=1, has 
 
 ## CFS
 
-CFS introduces virtual runtime to the the scheduling method, which rescribes how much time the task has been running on an 'ideal' machine. So every time a schedule needs to be triggered, the scheduler tends to pick the task whose virtual runtime is the least. Which means to pick the task that the running time on an ideal machine is the least so fa.
+CFS introduces virtual runtime to the the scheduling method, which describes how much time the task has been running on an 'ideal' machine. So every time a schedule needs to be triggered, the scheduler tends to pick the task whose virtual runtime is the least. Which means to pick the task that the running time on an ideal machine is the least so fa.
 
 ### Scheduling Parameters
 
